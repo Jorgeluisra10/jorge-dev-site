@@ -84,7 +84,7 @@ src/
 │  ├─ globals.css         # Tailwind base + variables CSS
 │  ├─ page.tsx            # HomePage (hero + servicios + proyectos + CTA + JSON-LD)
 │  ├─ services/page.tsx   # Página de servicios + calculadora
-│  └─ portfolio/...       # (opcional) listado de proyectos
+│  └─ portfolio/...       # listado de proyectos
 ├─ components/
 │  ├─ Navbar.tsx          # Sticky, blur, sheet móvil, toggle de tema
 │  ├─ Footer.tsx

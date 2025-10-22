@@ -15,7 +15,6 @@ export default function Footer(): React.JSX.Element {
           © {new Date().getFullYear()} Jorge Rodríguez. Todos los derechos
           reservados.
         </p>
-
         <nav className="flex gap-4 text-sm">
           <Link className="hover:underline" href="/privacy">
             Privacidad
