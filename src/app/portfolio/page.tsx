@@ -1,35 +1,67 @@
 "use client";
 
+/**
+ * PortfolioPage
+ * ------------------------------------------------------------
+ * - Carrusel accesible con controles y puntos.
+ * - Modal con resumen del proyecto (Imnoba).
+ * - Framer Motion tipado: Transition / TargetAndTransition.
+ * - Compatible con tsconfig `jsx: "react-jsx"`.
+ */
+
+import type React from "react"; // ✅ para usar React.JSX.Element en el return type
 import {
   useMemo,
   useState,
   useCallback,
-  KeyboardEvent,
-  MouseEvent,
+  type KeyboardEvent,
+  type MouseEvent,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  type Transition,
+  type Variants,
+  type TargetAndTransition,
+} from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 
-/* ===== Animations ===== */
-const spring = { type: "spring", stiffness: 500, damping: 40, mass: 0.9 };
-const fade = (d = 0) => ({
+/* ==================== Animations (tipadas) ==================== */
+
+/** Muelles rápidos y naturales (evita warnings de tipos) */
+const spring: Transition = {
+  type: "spring",
+  stiffness: 500,
+  damping: 40,
+  mass: 0.9,
+};
+
+/** Fade-up simple parametrizable */
+const fade = (d = 0): Variants => ({
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, delay: d } },
 });
+
+/** Slide con `custom` para dirección (prev/next). Tipamos retornos. */
 const slide = {
-  initial: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
+  initial: (dir: number): TargetAndTransition => ({
+    x: dir > 0 ? 40 : -40,
+    opacity: 0,
+  }),
   animate: { x: 0, opacity: 1, transition: { duration: 0.35 } },
-  exit: (dir: number) => ({
+  exit: (dir: number): TargetAndTransition => ({
     x: dir > 0 ? -40 : 40,
     opacity: 0,
     transition: { duration: 0.25 },
   }),
-};
+} as const;
 
-export default function PortfolioPage(): JSX.Element {
-  // Imágenes EXACTAS como en About (rutas string desde /public/images)
+/* ==================== Page ==================== */
+
+export default function PortfolioPage(): React.JSX.Element {
+  // Galería (rutas en /public/images)
   const gallery = useMemo(
     () => [
       { src: "/images/imnoba.png", alt: "Imnoba — home" },
@@ -89,9 +121,7 @@ export default function PortfolioPage(): JSX.Element {
           aria-label="Abrir resumen del proyecto Imnoba"
         >
           <div className="relative aspect-video bg-[var(--surface)]">
-            <AnimatePresence
-              /* evitar 'popLayout' por compatibilidad */ mode="sync"
-            >
+            <AnimatePresence mode="sync">
               <motion.div
                 key={gallery[idx]?.src ?? String(idx)}
                 custom={dir}
@@ -113,7 +143,7 @@ export default function PortfolioPage(): JSX.Element {
               </motion.div>
             </AnimatePresence>
 
-            {/* Dots + Controles carrusel */}
+            {/* Dots + controles */}
             <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between">
               <div className="flex gap-2">
                 {gallery.map((_, i) => (
@@ -194,7 +224,7 @@ export default function PortfolioPage(): JSX.Element {
             </div>
 
             <p className="mt-3 text-sm opacity-80">
-              Click en la card para ver el resumen completo del proyecto.
+              Click en la card para ver el resumen.
             </p>
           </div>
         </div>
@@ -315,8 +345,7 @@ export default function PortfolioPage(): JSX.Element {
                         propiedades y vehículos con
                         <em> filtros avanzados</em>, <em>paneles multi-rol</em>,
                         autenticación y experiencia refinada de rendimiento (CWV
-                        altos). El proyecto incluye arquitectura modular
-                        (Next.js App Router) y almacenamiento en Supabase.
+                        altos). Arquitectura modular (App Router) y Supabase.
                       </p>
                       <ul>
                         <li>
@@ -383,7 +412,7 @@ export default function PortfolioPage(): JSX.Element {
   );
 }
 
-/* ====== UI bits ====== */
+/* ==================== UI bits ==================== */
 function CarouselBtn({
   children,
   onClick,
