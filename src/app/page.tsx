@@ -1,65 +1,164 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+/**
+ * HomePage
+ * ------------------------------------------------------------
+ * - Hero con micro-animación (MotionFade) y CTA.
+ * - Secciones de Servicios y Proyectos con reveal staggerizado.
+ * - JSON-LD para SEO técnico (Person).
+ * - Tipado inmutable de data (`as const`) para evitar sorpresas.
+ */
+
+import MotionFade from "@/components/MotionFade";
+import ServiceCard from "@/components/ServiceCard";
+import ProjectCard from "@/components/ProjectCard";
+import Link from "next/link";
+
+export default function HomePage(): React.JSX.Element {
+  // Ítems de servicios: tipamos literal para que `icon` sea seguro
+  const services = [
+    {
+      title: "Landing pages de alto rendimiento",
+      description:
+        "Diseño pixel-perfect con Next.js, SEO listo y tiempos de carga excelentes.",
+      points: [
+        "Lighthouse 95+",
+        "Animaciones sutiles",
+        "Integración Analytics",
+      ],
+      icon: "rocket",
+    },
+    {
+      title: "Dashboards & paneles a medida",
+      description:
+        "UI limpia y productiva con tablas, filtros, gráficos y estados.",
+      points: ["Rendimiento en listas", "Accesibilidad", "Dark/Light mode"],
+      icon: "gauge",
+    },
+    {
+      title: "SEO & optimización técnica",
+      description:
+        "Estructura, metaetiquetas y JSON-LD para ganar visibilidad.",
+      points: ["Core Web Vitals", "Sitemaps automáticos", "OpenGraph"],
+      icon: "search",
+    },
+  ] as const;
+
+  // Proyectos destacados
+  const projects = [
+    {
+      title: "Imnoba (Propiedades & Autos)",
+      description:
+        "Marketplace con filtros avanzados, paneles multi-rol y RLS en Supabase.",
+      tags: ["Next.js", "Tailwind", "Supabase", "RLS"],
+      href: "https://www.imnoba.com",
+    },
+    {
+      title: "RA WebStudio",
+      description:
+        "Estudio web con estética profesional y componentes animados.",
+      tags: ["Next.js", "Tailwind", "Framer Motion"],
+      href: "#",
+    },
+  ] as const;
+
+  // JSON-LD para rich results (ajusta `url`/`sameAs`)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Jorge Luis Rodríguez",
+    jobTitle: "Front-End & Product Engineer",
+    url: "https://tu-dominio.com",
+    sameAs: ["https://www.linkedin.com/", "https://github.com/"],
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      {/* SEO técnico: schema Person */}
+      <script
+        type="application/ld+json"
+        // Mantener stringify sin formato para ahorrar bytes
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* HERO */}
+      <section className="py-8 md:py-16">
+        <MotionFade>
+          <div className="text-center max-w-3xl mx-auto">
+            <span className="badge mb-4">
+              Disponible para proyectos selectos
+            </span>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+              Diseño y desarrollo{" "}
+              <span className="text-[rgb(var(--primary))]">web moderno</span>{" "}
+              que impulsa resultados
+            </h1>
+            <p className="mt-4 text-lg opacity-90">
+              Soy Jorge, construyo interfaces hermosas, rápidas y accesibles con
+              Next.js y una obsesión por el detalle.
+            </p>
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <Link href="/contact" className="btn-primary">
+                Agenda una llamada
+              </Link>
+              <Link href="/portfolio" className="btn-ghost">
+                Ver portafolio
+              </Link>
+            </div>
+          </div>
+        </MotionFade>
+      </section>
+
+      {/* SERVICIOS */}
+      <section className="py-10 md:py-16">
+        <MotionFade>
+          <h2 className="text-2xl font-bold mb-6">Servicios</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {services.map((s, i) => (
+              <MotionFade key={s.title} delay={i * 0.1}>
+                {/* `icon` está tipado con literal union gracias al `as const` */}
+                <ServiceCard {...s} />
+              </MotionFade>
+            ))}
+          </div>
+        </MotionFade>
+      </section>
+
+      {/* PROYECTOS */}
+      <section className="py-10 md:py-16">
+        <MotionFade>
+          <h2 className="text-2xl font-bold mb-6">Proyectos</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {projects.map((p, i) => (
+              <MotionFade key={p.title} delay={i * 0.1}>
+                <ProjectCard {...p} />
+              </MotionFade>
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link href="/services" className="btn-primary">
+              Ver lista completa de servicios
+            </Link>
+          </div>
+        </MotionFade>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="py-10 md:py-16">
+        <MotionFade>
+          <div className="rounded-2xl p-8 border text-center">
+            <h3 className="text-xl md:text-2xl font-semibold">
+              ¿Listo para elevar tu producto?
+            </h3>
+            <p className="mt-2 opacity-90">
+              Hagamos una primera sesión de 30 minutos para entender tu reto.
+            </p>
+            <Link href="/contact" className="btn-primary mt-4 inline-flex">
+              Contactar
+            </Link>
+          </div>
+        </MotionFade>
+      </section>
+    </>
   );
 }
