@@ -4,15 +4,96 @@
  * HomePage
  * ------------------------------------------------------------
  * - Hero con micro-animación (MotionFade) y CTA.
+ * - Sección de colaboración como socio tecnológico conectada a /socios.
  * - Secciones de Servicios y Proyectos con reveal staggerizado.
  * - JSON-LD para SEO técnico (Person).
- * - Tipado inmutable de data (`as const`) para evitar sorpresas.
  */
 
 import MotionFade from "@/components/MotionFade";
 import ServiceCard from "@/components/ServiceCard";
 import ProjectCard from "@/components/ProjectCard";
 import Link from "next/link";
+
+function PartnerCollabSection(): React.JSX.Element {
+  return (
+    <section className="py-10 md:py-16">
+      <MotionFade>
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
+          {/* Texto principal */}
+          <div>
+            <span className="badge mb-3">Nuevo · Socio tecnológico</span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              ¿Tienes una idea de negocio{" "}
+              <span className="text-[rgb(var(--primary))]">
+                y quieres un socio tech
+              </span>
+              ?
+            </h2>
+            <p className="mt-4 text-base md:text-lg opacity-90">
+              Además de desarrollar productos digitales como servicio, también
+              me asocio con personas que quieran construir negocios reales:
+              proyectos físicos (cafeterías, gimnasios, tiendas, servicios),
+              iniciativas 100% digitales (SaaS, marketplaces) o duplas donde tú
+              lleves contenido y comunidad, y yo toda la parte tecnológica.
+            </p>
+            <p className="mt-3 text-sm md:text-base opacity-80">
+              No es “te hago una web y listo”. Entramos como proyecto conjunto:
+              definimos responsabilidades, objetivos y un modelo de
+              participación claro para que ambos tengamos skin in the game.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <Link href="/socios" className="btn-primary">
+                Ver cómo funciona la colaboración
+              </Link>
+              <Link href="/contact" className="btn-ghost text-sm md:text-base">
+                Proponer un proyecto o negocio
+              </Link>
+            </div>
+
+            <p className="mt-3 text-xs md:text-sm opacity-70 max-w-xl">
+              En la página de <span className="font-medium">Socios</span>{" "}
+              explico en detalle los tipos de proyectos que busco, el proceso de
+              trabajo y los modelos de colaboración posibles.
+            </p>
+          </div>
+
+          {/* Card lateral con bullets */}
+          <div className="rounded-2xl border p-6 md:p-7 text-left">
+            <h3 className="text-lg md:text-xl font-semibold">
+              ¿Qué pongo yo sobre la mesa?
+            </h3>
+            <ul className="mt-4 space-y-2 text-sm md:text-base opacity-90">
+              <li>
+                🔹 Diseño y desarrollo completo de la parte digital:
+                landing/app, panel interno, sistemas de reservas o ventas,
+                dashboards.
+              </li>
+              <li>
+                🔹 Integración de pagos, analítica y automatizaciones para que
+                el negocio no dependa de procesos manuales ni planillas
+                infinitas.
+              </li>
+              <li>
+                🔹 Visión de producto: priorizar features, construir MVPs
+                realistas y medir tracción desde el día uno.
+              </li>
+              <li>
+                🔹 Modelo de colaboración flexible: participación en utilidades
+                y roadmap claro para crecer juntos en el largo plazo.
+              </li>
+            </ul>
+            <p className="mt-4 text-xs md:text-sm opacity-70">
+              Busco pocos proyectos, pero muy serios. Si tienes una idea con
+              potencial real y estás dispuesto a comprometerte, podemos ver si
+              tiene sentido construirlo en equipo.
+            </p>
+          </div>
+        </div>
+      </MotionFade>
+    </section>
+  );
+}
 
 export default function HomePage(): React.JSX.Element {
   // Ítems de servicios: tipamos literal para que `icon` sea seguro
@@ -108,6 +189,9 @@ export default function HomePage(): React.JSX.Element {
           </div>
         </MotionFade>
       </section>
+
+      {/* SECCIÓN: Socio tecnológico conectada con /socios */}
+      <PartnerCollabSection />
 
       {/* SERVICIOS */}
       <section className="py-10 md:py-16">

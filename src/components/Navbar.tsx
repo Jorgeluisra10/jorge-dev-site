@@ -30,6 +30,7 @@ type NavLink = { href: string; label: string };
 const links: NavLink[] = [
   { href: "/", label: "Inicio" },
   { href: "/services", label: "Servicios" },
+  { href: "/socios", label: "Socios" },
   { href: "/portfolio", label: "Portafolio" },
   { href: "/about", label: "Sobre mí" },
   { href: "/contact", label: "Contacto" },
