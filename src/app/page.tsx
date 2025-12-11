@@ -363,31 +363,6 @@ export default function HomePage(): React.JSX.Element {
           ))}
         </div>
       </motion.section>
-
-      {/* CTA FINAL */}
-      <motion.section
-        variants={sectionVariants}
-        className="max-w-4xl mx-auto px-4"
-      >
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--foreground)] text-[var(--background)] p-10 md:p-16 text-center">
-          {/* Decoración CTA */}
-          <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_45%,rgba(255,255,255,0.05)_50%,transparent_55%)] bg-[length:200%_200%] animate-[shimmer_4s_infinite]" />
-
-          <h3 className="relative z-10 text-3xl md:text-4xl font-bold mb-4 tracking-tight">
-            ¿Listo para elevar tu producto?
-          </h3>
-          <p className="relative z-10 text-lg opacity-80 mb-8 max-w-xl mx-auto">
-            Hagamos una sesión de descubrimiento de 30 minutos. Sin compromiso,
-            solo para entender tu reto técnico.
-          </p>
-          <Link
-            href="/contact"
-            className="relative z-10 inline-flex items-center justify-center h-14 px-8 rounded-2xl bg-[var(--background)] text-[var(--foreground)] font-bold text-lg hover:scale-105 transition-transform"
-          >
-            Iniciar Conversación
-          </Link>
-        </div>
-      </motion.section>
     </motion.main>
   );
 }
