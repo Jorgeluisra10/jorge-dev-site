@@ -1,192 +1,115 @@
 "use client";
 
-/**
- * PriceCalculatorUSDRegional
- * ------------------------------------------------------------
- * - Calculadora con desglose y ajustes por región.
- * - Sin dependencias externas (solo lucide + framer para micro-entradas).
- * - Helper para descargar JSON de cotización.
- */
-
-import { useEffect, useMemo, useState } from "react";
+import type { JSX } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { toPng } from "html-to-image"; // Necesitas: npm install html-to-image
 import {
   DollarSign,
   Percent,
-  Clock,
   Settings2,
   Download,
   Mail,
+  CheckCircle2,
+  Layout,
+  ShoppingCart,
+  Database,
   Globe2,
-  Info,
-  HelpCircle,
+  Paintbrush,
+  Clock,
+  Code2,
+  ChevronDown,
+  Layers,
+  MessageCircle,
+  ImageIcon,
+  Share2,
+  Loader2,
 } from "lucide-react";
 
-/* =================== REGIONES + overrides =================== */
-const REGIONS = {
-  global: {
-    label: "Internacional",
-    multiplier: 1.0,
-    note: "Referencia global competitiva.",
-  },
-  co: {
-    label: "Colombia",
-    multiplier: 0.8,
-    note: "Ajuste al mercado local en USD.",
-  },
-  ar: {
-    label: "Argentina",
-    multiplier: 0.75,
-    note: "Ajuste al mercado local en USD.",
-  },
-  es: {
-    label: "España",
-    multiplier: 1.1,
-    note: "Mercado UE, exigencias y fiscalidad.",
-  },
-} as const;
+/* =================== CONFIGURACIÓN =================== */
+const PHONE_NUMBER = "5491150230176"; // PON AQUÍ TU NÚMERO (Con código país, sin +)
 
-const REGIONAL_BASE_OVERRIDES: Partial<
-  Record<
-    keyof typeof REGIONS,
-    Partial<Record<"landing" | "corporate" | "ecommerce" | "saas", number>>
-  >
-> = {
-  co: { landing: 160 },
-  ar: { landing: 180 },
-  es: { landing: 650 },
-};
-
-/* =================== CONFIG BASE =================== */
 const BASES = {
-  landing: { label: "Landing Page", base: 600, basePages: 1 },
-  corporate: { label: "Web Corporativa", base: 1200, basePages: 5 },
-  ecommerce: { label: "E-commerce", base: 2200, basePages: 8 },
-  saas: { label: "SaaS MVP", base: 3200, basePages: 10 },
+  landing: {
+    label: "Landing Page",
+    base: 150,
+    basePages: 1,
+    icon: Layout,
+    desc: "Conversión rápida y captación.",
+  },
+  corporate: {
+    label: "Corporativa",
+    base: 350,
+    basePages: 5,
+    icon: Globe2,
+    desc: "Presencia de marca sólida.",
+  },
+  ecommerce: {
+    label: "E-commerce",
+    base: 850,
+    basePages: 8,
+    icon: ShoppingCart,
+    desc: "Catálogo y ventas online.",
+  },
+  saas: {
+    label: "Web App / SaaS",
+    base: 1500,
+    basePages: 10,
+    icon: Database,
+    desc: "Funcionalidad avanzada.",
+  },
 } as const;
 
 const COMPLEXITY = {
-  basic: {
-    label: "Básica",
-    multiplier: 1.0,
-    tip: "UI simple, sin microinteracciones complejas.",
-  },
-  pro: {
-    label: "Pro",
-    multiplier: 1.15,
-    tip: "Microinteracciones y estados sólidos.",
-  },
-  premium: {
-    label: "Premium (detalle alto)",
-    multiplier: 1.3,
-    tip: "Animaciones avanzadas y performance fina.",
-  },
+  basic: { label: "Esencial", multiplier: 1.0, tip: "Limpio y funcional" },
+  pro: { label: "Profesional", multiplier: 1.3, tip: "Branding detallado" },
+  premium: { label: "Premium", multiplier: 1.6, tip: "Experiencia inmersiva" },
 } as const;
 
 const CMS = {
-  none: { label: "Sin CMS", add: 0, tip: "Contenido estático." },
-  headless: {
-    label: "Headless CMS",
-    add: 400,
-    tip: "Sanity/Contentful con API.",
-  },
-  fullcms: {
-    label: "CMS completo",
-    add: 700,
-    tip: "Roles, workflows y colecciones complejas.",
-  },
+  none: { label: "Sin CMS (Código puro)", add: 0 },
+  headless: { label: "Headless CMS (Sanity/Strapi)", add: 250 },
+  fullcms: { label: "CMS Completo (WordPress/Webflow)", add: 450 },
 } as const;
 
 const COMMERCE = {
-  none: { label: "Sin e-commerce", add: 0, tip: "Sin carrito/checkout." },
-  lite: {
-    label: "E-commerce lite",
-    add: 800,
-    tip: "Catálogo y checkout básico.",
-  },
-  pro: {
-    label: "E-commerce pro",
-    add: 1500,
-    tip: "Variantes, cupones y reportes.",
-  },
+  none: { label: "Sin tienda", add: 0 },
+  lite: { label: "Checkout Básico (Stripe Link)", add: 300 },
+  pro: { label: "Tienda Completa (Shopify/Woo)", add: 900 },
 } as const;
 
 const SEO = {
-  none: { label: "Sin SEO", add: 0, tip: "Sin configuración técnica." },
-  basic: {
-    label: "SEO básico",
-    add: 200,
-    tip: "Metas, OG, sitemap y estructura.",
-  },
-  advanced: {
-    label: "SEO avanzado",
-    add: 450,
-    tip: "CWV, JSON-LD y mejoras técnicas.",
-  },
+  none: { label: "Básico", add: 0 },
+  basic: { label: "SEO Técnico On-page", add: 150 },
+  advanced: { label: "SEO Growth Strategy", add: 400 },
 } as const;
 
 const COPY = {
-  none: {
-    label: "Sin copywriting",
-    add: 0,
-    tip: "Textos provistos por el cliente.",
-  },
-  basic: { label: "Copy básico", add: 150, tip: "2–3 secciones." },
-  full: {
-    label: "Copy completo",
-    add: 400,
-    tip: "Home, about, servicios y CTAs.",
-  },
+  none: { label: "Cliente entrega textos", add: 0 },
+  basic: { label: "Revisión UX Writing", add: 100 },
+  full: { label: "Redacción Persuasiva", add: 300 },
 } as const;
 
 const ANIM = {
-  none: { label: "Sin animaciones", add: 0, tip: "Transiciones mínimas." },
-  subtle: { label: "Sutiles", add: 150, tip: "Hover y reveal suaves." },
-  advanced: {
-    label: "Avanzadas",
-    add: 350,
-    tip: "Secuencias, parallax o Lottie.",
-  },
+  none: { label: "Estándar", add: 0 },
+  subtle: { label: "Micro-interacciones", add: 150 },
+  advanced: { label: "Scrollytelling / 3D", add: 450 },
 } as const;
 
 const URGENCY = {
-  normal: {
-    label: "Normal (2–4 sem.)",
-    multiplier: 1.0,
-    tip: "Plan estándar.",
-  },
-  fast: {
-    label: "Rápido (1–2 sem.)",
-    multiplier: 1.2,
-    tip: "Prioridad en agenda.",
-  },
-  express: {
-    label: "Express (< 1 sem.)",
-    multiplier: 1.4,
-    tip: "Slots reservados.",
-  },
+  normal: { label: "Estándar", multiplier: 1.0, tip: "Plazo regular" },
+  fast: { label: "Prioritario", multiplier: 1.25, tip: "-25% tiempo" },
+  express: { label: "Express", multiplier: 1.5, tip: "Urgente" },
 } as const;
-
-const ADDITIONAL_PAGE_PRICE = 80;
-const INTEGRATION_UNIT = 120;
 
 const MAINTENANCE = {
-  none: { label: "Sin mantenimiento", monthly: 0, tip: "Sin soporte." },
-  basic: { label: "Básico", monthly: 50, tip: "Soporte y pequeños ajustes." },
-  pro: { label: "Pro", monthly: 100, tip: "Soporte prioritario y mejoras." },
+  none: { label: "Sin mantenimiento", monthly: 0 },
+  basic: { label: "Hosting + Actualizaciones", monthly: 30 },
+  pro: { label: "Growth Partner (Soporte)", monthly: 100 },
 } as const;
 
-const MAINTENANCE_OVERRIDES: Partial<
-  Record<
-    keyof typeof REGIONS,
-    Partial<Record<keyof typeof MAINTENANCE, number>>
-  >
-> = {
-  co: { basic: 30, pro: 55 },
-  ar: { basic: 30, pro: 55 },
-  es: { basic: 60, pro: 110 },
-};
-
+const ADDITIONAL_PAGE_PRICE = 50;
+const INTEGRATION_UNIT = 80;
 const FIRST_DISCOUNT_RATE = 0.2;
 
 /* =================== UTILS =================== */
@@ -197,26 +120,18 @@ function usd(n: number): string {
     maximumFractionDigits: 0,
   });
 }
+
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
 
-/* =================== Tooltip minimalista =================== */
-function Tip({ text, children }: { text: string; children: React.ReactNode }) {
-  return (
-    <span className="relative inline-block group cursor-help align-middle">
-      {children}
-      <span className="pointer-events-none absolute z-10 mt-1 hidden w-64 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] text-[rgb(var(--foreground))] p-3 text-xs shadow group-hover:block">
-        {text}
-      </span>
-    </span>
-  );
-}
+/* =================== COMPONENTE PRINCIPAL =================== */
+export default function PriceCalculatorUSD(): JSX.Element {
+  // Referencia para la captura de imagen
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
-/* =================== Componente =================== */
-export default function PriceCalculatorUSDRegional(): React.JSX.Element {
-  // Estado inicial práctico para demo
-  const [region, setRegion] = useState<keyof typeof REGIONS>("co");
+  // State initialization
   const [siteType, setSiteType] = useState<keyof typeof BASES>("landing");
   const [pages, setPages] = useState<number>(BASES.landing.basePages);
   const [complexity, setComplexity] =
@@ -230,38 +145,93 @@ export default function PriceCalculatorUSDRegional(): React.JSX.Element {
   const [urgency, setUrgency] = useState<keyof typeof URGENCY>("normal");
   const [maintenance, setMaintenance] =
     useState<keyof typeof MAINTENANCE>("none");
-  const [firstProject, setFirstProject] = useState<boolean>(false);
   const [coupon, setCoupon] = useState<string>("");
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Al cambiar tipo de sitio, resetea páginas a base
+  // 1. PERSISTENCIA: Cargar datos al montar (Client-side only)
   useEffect(() => {
-    setPages(BASES[siteType].basePages);
+    const saved = localStorage.getItem("calculator-state-v1");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Validamos que los datos existan para evitar errores si cambiamos la estructura
+        if (parsed.siteType) setSiteType(parsed.siteType);
+        if (parsed.pages) setPages(parsed.pages);
+        if (parsed.complexity) setComplexity(parsed.complexity);
+        if (parsed.cms) setCms(parsed.cms);
+        if (parsed.commerce) setCommerce(parsed.commerce);
+        if (parsed.seo) setSeo(parsed.seo);
+        if (parsed.copy) setCopy(parsed.copy);
+        if (parsed.anim) setAnim(parsed.anim);
+        if (parsed.integrations) setIntegrations(parsed.integrations);
+        if (parsed.urgency) setUrgency(parsed.urgency);
+        if (parsed.maintenance) setMaintenance(parsed.maintenance);
+        if (parsed.coupon) setCoupon(parsed.coupon);
+      } catch (e) {
+        console.error("Error cargando caché", e);
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // 2. PERSISTENCIA: Guardar datos cuando cambian
+  useEffect(() => {
+    if (!isLoaded) return; // No guardar hasta que hayamos cargado
+    const state = {
+      siteType,
+      pages,
+      complexity,
+      cms,
+      commerce,
+      seo,
+      copy,
+      anim,
+      integrations,
+      urgency,
+      maintenance,
+      coupon,
+    };
+    localStorage.setItem("calculator-state-v1", JSON.stringify(state));
+  }, [
+    siteType,
+    pages,
+    complexity,
+    cms,
+    commerce,
+    seo,
+    copy,
+    anim,
+    integrations,
+    urgency,
+    maintenance,
+    coupon,
+    isLoaded,
+  ]);
+
+  // Actualizar páginas mínimas al cambiar tipo (lógica de negocio)
+  useEffect(() => {
+    // Solo si el usuario pone menos páginas de las base, las subimos
+    if (pages < BASES[siteType].basePages) {
+      setPages(BASES[siteType].basePages);
+    }
   }, [siteType]);
 
-  // Cupón/primer proyecto
-  const discountActive =
-    firstProject || coupon.trim().toUpperCase() === "FIRST20";
+  const discountActive = coupon.trim().toUpperCase() === "FIRST20";
 
-  // Cálculo memoizado
+  // Calculations
   const breakdown = useMemo(() => {
-    const mult = REGIONS[region].multiplier;
     const baseConf = BASES[siteType];
+    const base = baseConf.base;
 
-    const overridden = REGIONAL_BASE_OVERRIDES[region]?.[siteType];
-    const base =
-      overridden !== undefined ? overridden : Math.round(baseConf.base * mult);
-
+    // Costos directos
     const extraPages = Math.max(0, pages - baseConf.basePages);
-    const pagesCost = Math.round(extraPages * (ADDITIONAL_PAGE_PRICE * mult));
-
-    const cmsCost = Math.round(CMS[cms].add * mult);
-    const shopCost = Math.round(COMMERCE[commerce].add * mult);
-    const seoCost = Math.round(SEO[seo].add * mult);
-    const copyCost = Math.round(COPY[copy].add * mult);
-    const animCost = Math.round(ANIM[anim].add * mult);
-    const integrationsCost = Math.round(
-      clamp(integrations, 0, 50) * (INTEGRATION_UNIT * mult)
-    );
+    const pagesCost = extraPages * ADDITIONAL_PAGE_PRICE;
+    const cmsCost = CMS[cms].add;
+    const shopCost = COMMERCE[commerce].add;
+    const seoCost = SEO[seo].add;
+    const copyCost = COPY[copy].add;
+    const animCost = ANIM[anim].add;
+    const integrationsCost = clamp(integrations, 0, 20) * INTEGRATION_UNIT;
 
     const preMult =
       base +
@@ -282,18 +252,11 @@ export default function PriceCalculatorUSDRegional(): React.JSX.Element {
       : 0;
     const oneTimeTotal = oneTimeSubtotal - discount;
 
-    const maintenanceBase = MAINTENANCE[maintenance].monthly;
-    const maintenanceOverride = MAINTENANCE_OVERRIDES[region]?.[maintenance];
-    const monthly =
-      maintenance === "none"
-        ? 0
-        : maintenanceOverride ?? Math.round(maintenanceBase * mult);
-
+    const monthly = MAINTENANCE[maintenance].monthly;
     const upfront = Math.round(oneTimeTotal * 0.5);
     const delivery = oneTimeTotal - upfront;
 
     return {
-      mult,
       base,
       pagesCost,
       cmsCost,
@@ -302,9 +265,6 @@ export default function PriceCalculatorUSDRegional(): React.JSX.Element {
       copyCost,
       animCost,
       integrationsCost,
-      preMult,
-      withComplexity,
-      withUrgency,
       oneTimeSubtotal,
       discount,
       oneTimeTotal,
@@ -313,7 +273,6 @@ export default function PriceCalculatorUSDRegional(): React.JSX.Element {
       delivery,
     };
   }, [
-    region,
     siteType,
     pages,
     complexity,
@@ -328,695 +287,569 @@ export default function PriceCalculatorUSDRegional(): React.JSX.Element {
     discountActive,
   ]);
 
-  // CTA → prellenar mensaje
-  const contactHref = useMemo(() => {
-    const payload = {
-      region: REGIONS[region].label,
-      siteType: BASES[siteType].label,
-      pages,
-      complexity: COMPLEXITY[complexity].label,
-      cms: CMS[cms].label,
-      commerce: COMMERCE[commerce].label,
-      seo: SEO[seo].label,
-      copy: COPY[copy].label,
-      animations: ANIM[anim].label,
-      integrations,
-      urgency: URGENCY[urgency].label,
-      maintenance: MAINTENANCE[maintenance].label,
-      firstProject,
-      coupon,
-      totals: {
-        subtotal: breakdown.oneTimeSubtotal,
-        discount: breakdown.discount,
-        oneTimeTotal: breakdown.oneTimeTotal,
-        monthly: breakdown.monthly,
-        upfront: breakdown.upfront,
-        delivery: breakdown.delivery,
-      },
-    };
-    const msg =
-      `Hola, Jorge. Me interesa este proyecto:\n` +
-      JSON.stringify(payload, null, 2);
-    return `/contact?quote=${encodeURIComponent(msg)}`;
-  }, [
-    region,
-    siteType,
-    pages,
-    complexity,
-    cms,
-    commerce,
-    seo,
-    copy,
-    anim,
-    integrations,
-    urgency,
-    maintenance,
-    firstProject,
-    coupon,
-    breakdown,
-  ]);
+  // 3. WHATSAPP HANDLER
+  const handleWhatsApp = () => {
+    const text = `
+*Hola! Me interesa cotizar este proyecto:*
+--------------------------------
+🚀 *Tipo:* ${BASES[siteType].label}
+📄 *Páginas:* ${pages}
+🎨 *Diseño:* ${COMPLEXITY[complexity].label}
+⚡ *Entrega:* ${URGENCY[urgency].label}
+--------------------------------
+*Extras:*
+• CMS: ${CMS[cms].label}
+• Tienda: ${COMMERCE[commerce].label}
+• SEO: ${SEO[seo].label}
+• Copy: ${COPY[copy].label}
+• Mantenimiento: ${MAINTENANCE[maintenance].label}
+--------------------------------
+💰 *Estimado Total: ${usd(breakdown.oneTimeTotal)}*
+${discountActive ? "(Descuento FIRST20 aplicado)" : ""}
+`.trim();
 
-  // Helper “desde”
-  const displayBaseForRegion = (k: keyof typeof BASES) => {
-    const overridden = REGIONAL_BASE_OVERRIDES[region]?.[k];
-    const mult = REGIONS[region].multiplier;
-    const raw =
-      overridden !== undefined ? overridden : Math.round(BASES[k].base * mult);
-    return usd(raw);
+    const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(
+      text
+    )}`;
+    window.open(url, "_blank");
   };
 
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] p-6 md:p-8"
-    >
-      {/* Encabezado */}
-      <div className="flex items-center justify-between gap-2 mb-6">
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-[rgb(var(--primary))]" />
-          <h2 className="text-xl md:text-2xl font-semibold">
-            Calculadora de precio (USD)
-          </h2>
-        </div>
-        <Tip text="Selecciona tu país para ver precios ajustados de forma competitiva.">
-          <div className="flex items-center gap-2">
-            <Globe2 className="h-5 w-5 opacity-80" />
-            <select
-              className="rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-3 py-2 text-sm"
-              value={region}
-              onChange={(e) =>
-                setRegion(e.target.value as keyof typeof REGIONS)
-              }
-              aria-label="Seleccionar país"
-              title="País / región"
-            >
-              {Object.entries(REGIONS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </Tip>
+  // 4. IMAGE DOWNLOAD HANDLER
+  const handleDownloadImage = useCallback(async () => {
+    if (!summaryRef.current) return;
+    setIsGeneratingImage(true);
+
+    try {
+      // Pequeño delay para asegurar que el usuario vea el loader
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const dataUrl = await toPng(summaryRef.current, {
+        cacheBust: true,
+        backgroundColor: "#ffffff", // Asegura fondo blanco si es PNG transparente
+        style: {
+          borderRadius: "32px", // Forzar bordes redondeados en la imagen
+        },
+        // Ocultar elementos específicos en la foto si es necesario
+        filter: (node) => {
+          return !node.classList?.contains("exclude-from-image");
+        },
+      });
+
+      const link = document.createElement("a");
+      link.download = `cotizacion-${siteType}-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Error generando imagen", err);
+      alert("Hubo un error al generar la imagen. Intenta de nuevo.");
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  }, [siteType]);
+
+  const contactHref = `/contact?quote=${encodeURIComponent(
+    JSON.stringify({
+      project: BASES[siteType].label,
+      total: breakdown.oneTimeTotal,
+    })
+  )}`;
+
+  if (!isLoaded)
+    return (
+      <div className="p-10 text-center opacity-50">
+        Cargando preferencias...
       </div>
+    );
 
-      <p className="text-xs opacity-80 -mt-3 mb-5">
-        Para <strong>{REGIONS[region].label}</strong> — {REGIONS[region].note}.
-        Promo <strong>−20%</strong> con cupón{" "}
-        <code className="px-1 rounded bg-black/5 dark:bg-white/10">
-          FIRST20
-        </code>
-        .
-      </p>
-
-      {/* CONTROLES */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Izquierda */}
-        <div className="space-y-4">
-          {/* Tipo de sitio */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="El tipo de proyecto define el alcance y la complejidad base.">
-                <span className="inline-flex items-center gap-1">
-                  Tipo de sitio <HelpCircle className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <select
-              className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-              value={siteType}
-              onChange={(e) =>
-                setSiteType(e.target.value as keyof typeof BASES)
-              }
-            >
-              {Object.entries(BASES).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label} — desde{" "}
-                  {displayBaseForRegion(k as keyof typeof BASES)}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs opacity-70 mt-1">
-              Incluye {BASES[siteType].basePages} pág. base. Páginas extra{" "}
-              {usd(
-                Math.round(ADDITIONAL_PAGE_PRICE * REGIONS[region].multiplier)
-              )}{" "}
-              c/u.
-            </p>
-          </div>
-
-          {/* Páginas */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="Cada página adicional suma maquetación, contenido y QA.">
-                <span className="inline-flex items-center gap-1">
-                  Páginas totales <Info className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={BASES[siteType].basePages}
-                max={30}
-                value={pages}
-                onChange={(e) => setPages(parseInt(e.target.value))}
-                className="w-full"
-              />
-              <input
-                type="number"
-                min={BASES[siteType].basePages}
-                max={30}
-                value={pages}
-                onChange={(e) =>
-                  setPages(
-                    clamp(
-                      parseInt(e.target.value || "0"),
-                      BASES[siteType].basePages,
-                      30
-                    )
-                  )
-                }
-                className="w-20 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-3 py-2"
-              />
-            </div>
-            <p className="text-xs opacity-70 mt-1">
-              Extra: {Math.max(0, pages - BASES[siteType].basePages)} ×{" "}
-              {usd(
-                Math.round(ADDITIONAL_PAGE_PRICE * REGIONS[region].multiplier)
-              )}{" "}
-              = {usd(breakdown.pagesCost)}
-            </p>
-          </div>
-
-          {/* Complejidad */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="Afecta detalle visual, estados, microinteracciones y esfuerzo de QA.">
-                <span className="inline-flex items-center gap-1">
-                  Complejidad de diseño <Info className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(COMPLEXITY).map(([k, v]) => (
-                <button
-                  key={k}
-                  onClick={() => setComplexity(k as keyof typeof COMPLEXITY)}
-                  title={v.tip}
-                  className={`rounded-xl border border-[rgb(var(--border))] px-3 py-2 text-sm ${
-                    complexity === k ? "ring-2 ring-[rgb(var(--ring))]" : ""
-                  }`}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* CMS / E-commerce / SEO */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-3 md:col-span-1">
-              <label className="block text-sm font-medium mb-1">
-                <Tip text="Panel para editar contenido sin tocar código.">
-                  <span className="inline-flex items-center gap-1">
-                    CMS <Info className="h-4 w-4 opacity-70" />
-                  </span>
-                </Tip>
-              </label>
-              <select
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-                value={cms}
-                onChange={(e) => setCms(e.target.value as keyof typeof CMS)}
-              >
-                {Object.entries(CMS).map(([k, v]) => {
-                  const extra = v.add
-                    ? `(+${usd(
-                        Math.round(v.add * REGIONS[region].multiplier)
-                      )})`
-                    : "";
-                  return (
-                    <option key={k} value={k}>
-                      {v.label} {extra}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="col-span-3 md:col-span-1">
-              <label className="block text-sm font-medium mb-1">
-                <Tip text="Carrito, checkout y catálogo para vender online.">
-                  <span className="inline-flex items-center gap-1">
-                    E-commerce <Info className="h-4 w-4 opacity-70" />
-                  </span>
-                </Tip>
-              </label>
-              <select
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-                value={commerce}
-                onChange={(e) =>
-                  setCommerce(e.target.value as keyof typeof COMMERCE)
-                }
-              >
-                {Object.entries(COMMERCE).map(([k, v]) => {
-                  const extra = v.add
-                    ? `(+${usd(
-                        Math.round(v.add * REGIONS[region].multiplier)
-                      )})`
-                    : "";
-                  return (
-                    <option key={k} value={k}>
-                      {v.label} {extra}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="col-span-3 md:col-span-1">
-              <label className="block text-sm font-medium mb-1">
-                <Tip text="Configuración técnica para mejorar visibilidad en buscadores.">
-                  <span className="inline-flex items-center gap-1">
-                    SEO <Info className="h-4 w-4 opacity-70" />
-                  </span>
-                </Tip>
-              </label>
-              <select
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-                value={seo}
-                onChange={(e) => setSeo(e.target.value as keyof typeof SEO)}
-              >
-                {Object.entries(SEO).map(([k, v]) => {
-                  const extra = v.add
-                    ? `(+${usd(
-                        Math.round(v.add * REGIONS[region].multiplier)
-                      )})`
-                    : "";
-                  return (
-                    <option key={k} value={k}>
-                      {v.label} {extra}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Derecha */}
-        <div className="space-y-4">
-          {/* Copy / Animaciones */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                <Tip text="Textos claros y persuasivos con tono acorde a tu marca.">
-                  <span className="inline-flex items-center gap-1">
-                    Copywriting <Info className="h-4 w-4 opacity-70" />
-                  </span>
-                </Tip>
-              </label>
-              <select
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-                value={copy}
-                onChange={(e) => setCopy(e.target.value as keyof typeof COPY)}
-              >
-                {Object.entries(COPY).map(([k, v]) => {
-                  const extra = v.add
-                    ? `(+${usd(
-                        Math.round(v.add * REGIONS[region].multiplier)
-                      )})`
-                    : "";
-                  return (
-                    <option key={k} value={k}>
-                      {v.label} {extra}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                <Tip text="Movimiento sutil o avanzado para reforzar branding y fluidez.">
-                  <span className="inline-flex items-center gap-1">
-                    Animaciones <Info className="h-4 w-4 opacity-70" />
-                  </span>
-                </Tip>
-              </label>
-              <select
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-                value={anim}
-                onChange={(e) => setAnim(e.target.value as keyof typeof ANIM)}
-              >
-                {Object.entries(ANIM).map(([k, v]) => {
-                  const extra = v.add
-                    ? `(+${usd(
-                        Math.round(v.add * REGIONS[region].multiplier)
-                      )})`
-                    : "";
-                  return (
-                    <option key={k} value={k}>
-                      {v.label} {extra}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-
-          {/* Integraciones */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="Conexiones con APIs de terceros: pagos, CRM, analytics, etc.">
-                <span className="inline-flex items-center gap-1">
-                  Integraciones <Info className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={20}
-                value={integrations}
-                onChange={(e) => setIntegrations(parseInt(e.target.value))}
-                className="w-full"
-              />
-              <input
-                type="number"
-                min={0}
-                max={20}
-                value={integrations}
-                onChange={(e) =>
-                  setIntegrations(clamp(parseInt(e.target.value || "0"), 0, 20))
-                }
-                className="w-20 rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-3 py-2"
-              />
-            </div>
-            <p className="text-xs opacity-70 mt-1">
-              {integrations} ×{" "}
-              {usd(Math.round(INTEGRATION_UNIT * REGIONS[region].multiplier))} ={" "}
-              {usd(breakdown.integrationsCost)}
-            </p>
-          </div>
-
-          {/* Urgencia */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="Afecta planificación y priorización en agenda.">
-                <span className="inline-flex items-center gap-1">
-                  Urgencia <Info className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(URGENCY).map(([k, v]) => (
-                <button
-                  key={k}
-                  onClick={() => setUrgency(k as keyof typeof URGENCY)}
-                  title={v.tip}
-                  className={`rounded-xl border border-[rgb(var(--border))] px-3 py-2 text-sm ${
-                    urgency === k ? "ring-2 ring-[rgb(var(--ring))]" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    {v.label}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mantenimiento */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              <Tip text="Soporte posterior al lanzamiento para ajustes y mejoras.">
-                <span className="inline-flex items-center gap-1">
-                  Mantenimiento mensual <Info className="h-4 w-4 opacity-70" />
-                </span>
-              </Tip>
-            </label>
-            <select
-              className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-3"
-              value={maintenance}
-              onChange={(e) =>
-                setMaintenance(e.target.value as keyof typeof MAINTENANCE)
-              }
-            >
-              {Object.entries(MAINTENANCE).map(([k, v]) => {
-                const override =
-                  MAINTENANCE_OVERRIDES[region]?.[
-                    k as keyof typeof MAINTENANCE
-                  ];
-                const price =
-                  k === "none"
-                    ? 0
-                    : override ??
-                      Math.round(v.monthly * REGIONS[region].multiplier);
+  return (
+    <div className="w-full relative text-[var(--foreground)]">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-12 relative">
+        {/* LEFT COLUMN: Controls */}
+        <div className="xl:col-span-8 space-y-10">
+          {/* 1. TIPO DE PROYECTO */}
+          <section>
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <Layout className="w-5 h-5" />
+              </div>
+              ¿Qué vamos a construir?
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Object.entries(BASES).map(([key, val]) => {
+                const Icon = val.icon;
+                const isSelected = siteType === key;
                 return (
-                  <option key={k} value={k}>
-                    {v.label} {price ? `(${usd(price)}/mes)` : "(—)"}
-                  </option>
+                  <motion.button
+                    whileHover={{ scale: 1.01, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    key={key}
+                    onClick={() => setSiteType(key as any)}
+                    className={`group relative p-5 rounded-2xl text-left border-2 transition-all duration-300 overflow-hidden ${
+                      isSelected
+                        ? "border-[var(--primary)] bg-[var(--surface)] shadow-lg ring-1 ring-[var(--primary)]/20"
+                        : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)]/50"
+                    }`}
+                  >
+                    <div className="relative z-10 flex justify-between items-start mb-4">
+                      <div
+                        className={`p-3 rounded-xl transition-all duration-300 ${
+                          isSelected
+                            ? "bg-[var(--primary)] text-[var(--on-primary)] shadow-md"
+                            : "bg-[var(--background)] text-[var(--muted)] group-hover:text-[var(--primary)]"
+                        }`}
+                      >
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      {isSelected && (
+                        <div className="text-[var(--primary)]">
+                          <CheckCircle2 className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="relative z-10">
+                      <h4
+                        className={`font-bold text-lg mb-1 ${
+                          isSelected
+                            ? "text-[var(--primary-strong)]"
+                            : "text-[var(--foreground)]"
+                        }`}
+                      >
+                        {val.label}
+                      </h4>
+                      <p className="text-sm text-[var(--muted)] mb-4 font-medium">
+                        {val.desc}
+                      </p>
+                      <div className="text-xs font-bold px-2 py-1 rounded border inline-block bg-[var(--background)] border-[var(--border)] text-[var(--muted)]">
+                        Base {usd(val.base)}
+                      </div>
+                    </div>
+                  </motion.button>
                 );
               })}
-            </select>
+            </div>
+          </section>
+
+          {/* 2. SLIDERS (Alcance) */}
+          <section className="bg-[var(--surface)] border border-[var(--border)] p-6 md:p-8 rounded-3xl shadow-sm relative overflow-hidden">
+            <h3 className="text-xl font-bold mb-8 flex items-center gap-3 relative z-10">
+              <div className="p-2 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <Settings2 className="w-5 h-5" />
+              </div>
+              Alcance y Escala
+            </h3>
+
+            <div className="space-y-10 relative z-10">
+              {/* Pages Slider */}
+              <div>
+                <div className="flex justify-between items-end mb-4">
+                  <label className="font-bold text-base flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[var(--muted)]" /> Páginas
+                    Totales
+                  </label>
+                  <div className="text-right bg-[var(--background)] px-3 py-1 rounded-lg border border-[var(--border)]">
+                    <span className="text-xl font-black text-[var(--primary)] tabular-nums">
+                      {pages}
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={BASES[siteType].basePages}
+                  max={50}
+                  value={pages}
+                  onChange={(e) => setPages(parseInt(e.target.value))}
+                  className="w-full h-2 bg-[var(--border)] rounded-lg appearance-none cursor-pointer accent-[var(--primary)] hover:accent-[var(--primary-strong)] transition-all"
+                />
+                <div className="flex justify-between mt-2 text-xs font-bold text-[var(--muted)] uppercase tracking-wide">
+                  <span>Min: {BASES[siteType].basePages}</span>
+                  <span>Max: 50</span>
+                </div>
+              </div>
+
+              <div className="w-full h-px bg-[var(--border)]"></div>
+
+              {/* Integrations Slider */}
+              <div>
+                <div className="flex justify-between items-end mb-4">
+                  <label className="font-bold text-base flex items-center gap-2">
+                    <Code2 className="w-4 h-4 text-[var(--muted)]" />{" "}
+                    Integraciones API
+                  </label>
+                  <div className="text-right bg-[var(--background)] px-3 py-1 rounded-lg border border-[var(--border)]">
+                    <span className="text-xl font-black text-[var(--primary)] tabular-nums">
+                      {integrations}
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={20}
+                  value={integrations}
+                  onChange={(e) => setIntegrations(parseInt(e.target.value))}
+                  className="w-full h-2 bg-[var(--border)] rounded-lg appearance-none cursor-pointer accent-[var(--primary)] hover:accent-[var(--primary-strong)] transition-all"
+                />
+                <p className="text-xs text-[var(--muted)] mt-3">
+                  Ejemplos: Pasarelas de pago (Stripe), CRMs, Google Maps, Auth,
+                  etc.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 3. NIVEL Y VELOCIDAD */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Diseño */}
+            <section>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Paintbrush className="w-4 h-4 text-[var(--primary)]" /> Nivel
+                de Diseño
+              </h3>
+              <div className="space-y-2">
+                {Object.entries(COMPLEXITY).map(([key, val]) => {
+                  const isActive = complexity === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setComplexity(key as any)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
+                        isActive
+                          ? "border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] ring-1 ring-[var(--primary)]/30"
+                          : "bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:border-[var(--primary)]/50"
+                      }`}
+                    >
+                      <div className="text-left">
+                        <div
+                          className={`text-sm font-bold ${
+                            isActive ? "text-[var(--primary)]" : ""
+                          }`}
+                        >
+                          {val.label}
+                        </div>
+                        <div className="text-xs opacity-70">{val.tip}</div>
+                      </div>
+                      {isActive && (
+                        <div className="w-2 h-2 bg-[var(--primary)] rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Velocidad */}
+            <section>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[var(--primary)]" /> Tiempo de
+                Entrega
+              </h3>
+              <div className="space-y-2">
+                {Object.entries(URGENCY).map(([key, val]) => {
+                  const isActive = urgency === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setUrgency(key as any)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${
+                        isActive
+                          ? "border-[var(--primary)] bg-[var(--background)] text-[var(--foreground)] ring-1 ring-[var(--primary)]/30"
+                          : "bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:border-[var(--primary)]/50"
+                      }`}
+                    >
+                      <div className="text-left">
+                        <div
+                          className={`text-sm font-bold ${
+                            isActive ? "text-[var(--primary)]" : ""
+                          }`}
+                        >
+                          {val.label}
+                        </div>
+                        <div className="text-xs opacity-70">{val.tip}</div>
+                      </div>
+                      {isActive && (
+                        <div className="w-2 h-2 bg-[var(--primary)] rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
           </div>
 
-          {/* Descuento */}
-          <div className="rounded-xl border border-[rgb(var(--border))] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Percent className="h-4 w-4" />
-                Aplicar 20% de descuento (primer proyecto)
-              </label>
-              <input
-                type="checkbox"
-                checked={firstProject}
-                onChange={(e) => setFirstProject(e.target.checked)}
-              />
+          {/* 4. EXTRAS TÉCNICOS */}
+          <section>
+            <h3 className="text-xl font-bold mb-6">
+              Especificaciones Técnicas
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                {
+                  label: "Gestión de Contenido",
+                  val: cms,
+                  set: setCms,
+                  opts: CMS,
+                },
+                {
+                  label: "Tienda / Pagos",
+                  val: commerce,
+                  set: setCommerce,
+                  opts: COMMERCE,
+                },
+                { label: "Estrategia SEO", val: seo, set: setSeo, opts: SEO },
+                { label: "Copywriting", val: copy, set: setCopy, opts: COPY },
+                {
+                  label: "Animación Web",
+                  val: anim,
+                  set: setAnim,
+                  opts: ANIM,
+                },
+                {
+                  label: "Mantenimiento Mensual",
+                  val: maintenance,
+                  set: setMaintenance,
+                  opts: MAINTENANCE,
+                  monthly: true,
+                },
+              ].map((field, i) => (
+                <div
+                  key={i}
+                  className="group relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] hover:border-[var(--primary)]/40 transition-all"
+                >
+                  <label className="absolute top-2.5 left-4 text-[10px] uppercase font-bold text-[var(--muted)] tracking-wider pointer-events-none">
+                    {field.label}
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={field.val}
+                      onChange={(e) => field.set(e.target.value as any)}
+                      className="w-full pt-7 pb-3 px-4 rounded-2xl bg-transparent outline-none appearance-none cursor-pointer font-bold text-sm text-[var(--foreground)] focus:ring-0 border-none"
+                    >
+                      {Object.entries(field.opts).map(([k, v]: any) => {
+                        const cost = field.monthly ? v.monthly : v.add;
+                        const price =
+                          cost === 0
+                            ? ""
+                            : `(+${usd(cost)}${field.monthly ? "/mes" : ""})`;
+                        return (
+                          <option key={k} value={k}>
+                            {v.label} {price}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-[10%] w-4 h-4 text-[var(--muted)] pointer-events-none group-hover:text-[var(--primary)]" />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-2 mt-3">
-              <input
-                placeholder="Cupón (ej: FIRST20)"
-                className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--surface))] px-4 py-2"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-              />
+          </section>
+
+          {/* COUPON */}
+          <div className="bg-[var(--surface)] p-6 rounded-2xl border border-dashed border-[var(--border)] flex flex-wrap items-center gap-5">
+            <div className="w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
+              <Percent className="w-4 h-4" />
             </div>
+            <div className="flex-1">
+              <h5 className="font-bold text-sm">¿Tienes un código?</h5>
+              <p className="text-xs text-[var(--muted)] mt-1">
+                Usa{" "}
+                <span className="font-mono font-bold px-1 rounded border border-[var(--border)]">
+                  FIRST20
+                </span>{" "}
+                para un 20% OFF en tu primer pedido.
+              </p>
+            </div>
+            <input
+              type="text"
+              placeholder="CÓDIGO"
+              value={coupon}
+              onChange={(e) => setCoupon(e.target.value)}
+              className="w-28 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-sm font-bold text-center focus:outline-none focus:border-[var(--primary)] uppercase placeholder:text-[var(--muted)]/50"
+            />
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Floating Summary */}
+        <div className="xl:col-span-4">
+          <div className="sticky top-24">
+            {/* WRAPPER PARA CAPTURA DE IMAGEN */}
+            <motion.div
+              layout
+              ref={summaryRef}
+              className="relative rounded-[2rem] overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-xl shadow-black/5"
+            >
+              {/* Marca de agua que solo aparece en la imagen descargada (opcional) */}
+              <div className="absolute top-0 right-0 p-4 opacity-0 pointer-events-none group-[.exporting]:opacity-100">
+                <span className="text-xs font-bold text-[var(--muted)]">
+                  Calculado en MiAgencia
+                </span>
+              </div>
+
+              <div className="relative p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-black flex items-center gap-3">
+                    <div className="p-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg">
+                      <DollarSign className="w-4 h-4" />
+                    </div>
+                    Presupuesto
+                  </h2>
+                  <div className="text-xs font-bold px-2 py-1 rounded bg-[var(--background)] text-[var(--muted)] border border-[var(--border)]">
+                    #DRAFT
+                  </div>
+                </div>
+
+                {/* Lines */}
+                <div className="space-y-3 mb-8">
+                  <div className="flex justify-between items-center py-2 border-b border-[var(--border)]">
+                    <span className="font-bold text-sm text-[var(--muted)]">
+                      Base {BASES[siteType].label}
+                    </span>
+                    <span className="font-mono font-medium">
+                      {usd(breakdown.base)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { l: "Páginas extra", p: breakdown.pagesCost },
+                      { l: "CMS / Datos", p: breakdown.cmsCost },
+                      { l: "E-commerce", p: breakdown.shopCost },
+                      { l: "Integraciones", p: breakdown.integrationsCost },
+                      {
+                        l: "SEO & Copy",
+                        p: breakdown.seoCost + breakdown.copyCost,
+                      },
+                      { l: "Animación", p: breakdown.animCost },
+                    ].map(
+                      (item, i) =>
+                        item.p > 0 && (
+                          <div
+                            key={i}
+                            className="flex justify-between text-xs text-[var(--muted)]"
+                          >
+                            <span>+ {item.l}</span>
+                            <span className="font-mono font-medium text-[var(--foreground)]">
+                              {usd(item.p)}
+                            </span>
+                          </div>
+                        )
+                    )}
+                  </div>
+
+                  {(complexity !== "basic" || urgency !== "normal") && (
+                    <div className="bg-[var(--background)] rounded-lg p-3 text-xs space-y-2 border border-[var(--border)] mt-4">
+                      {complexity !== "basic" && (
+                        <div className="flex justify-between text-[var(--muted)]">
+                          <span>Diseño {COMPLEXITY[complexity].label}</span>
+                          <span className="font-bold bg-[var(--surface)] px-1.5 rounded border border-[var(--border)]">
+                            x{COMPLEXITY[complexity].multiplier}
+                          </span>
+                        </div>
+                      )}
+                      {urgency !== "normal" && (
+                        <div className="flex justify-between text-[var(--muted)]">
+                          <span>Entrega {URGENCY[urgency].label}</span>
+                          <span className="font-bold bg-[var(--surface)] px-1.5 rounded border border-[var(--border)]">
+                            x{URGENCY[urgency].multiplier}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* TOTAL BIG */}
+                <div className="mb-8 p-5 bg-[var(--background)] rounded-2xl border border-[var(--border)]">
+                  {breakdown.discount > 0 && (
+                    <div className="flex justify-between text-[10px] text-green-600 font-bold uppercase tracking-wider mb-2">
+                      <span>Descuento</span>
+                      <span>- {usd(breakdown.discount)}</span>
+                    </div>
+                  )}
+                  <div className="text-[var(--muted)] text-[10px] font-black uppercase tracking-widest mb-1">
+                    Estimación Total
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black tracking-tight text-[var(--primary)]">
+                      {usd(breakdown.oneTimeTotal)}
+                    </span>
+                    <span className="text-sm font-bold text-[var(--muted)]">
+                      USD
+                    </span>
+                  </div>
+                  {maintenance !== "none" && (
+                    <div className="text-xs font-bold text-[var(--foreground)] mt-3 pt-3 border-t border-[var(--border)] flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
+                      + {usd(breakdown.monthly)}/mes soporte
+                    </div>
+                  )}
+                </div>
+
+                {/* Terms */}
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                  <div className="bg-[var(--background)] p-3 rounded-xl border border-[var(--border)] text-center">
+                    <div className="text-[9px] text-[var(--muted)] uppercase font-black mb-1">
+                      Inicio 50%
+                    </div>
+                    <div className="font-bold text-sm">
+                      {usd(breakdown.upfront)}
+                    </div>
+                  </div>
+                  <div className="bg-[var(--background)] p-3 rounded-xl border border-[var(--border)] text-center">
+                    <div className="text-[9px] text-[var(--muted)] uppercase font-black mb-1">
+                      Final 50%
+                    </div>
+                    <div className="font-bold text-sm">
+                      {usd(breakdown.delivery)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions - Clase 'exclude-from-image' para que no salgan en la foto */}
+                <div className="space-y-3 exclude-from-image">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleWhatsApp}
+                    className="w-full py-4 rounded-xl bg-[#25D366] text-white font-bold text-center shadow-lg shadow-[#25D366]/20 flex items-center justify-center gap-2 text-base hover:brightness-110 transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5" /> Enviar a WhatsApp
+                  </motion.button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.a
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      href={contactHref}
+                      className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-bold text-center shadow-lg shadow-[var(--primary)]/20 flex items-center justify-center gap-2 text-sm hover:brightness-110 transition-all"
+                    >
+                      <Mail className="w-4 h-4" /> Email
+                    </motion.a>
+
+                    <button
+                      onClick={handleDownloadImage}
+                      disabled={isGeneratingImage}
+                      className="w-full py-3 rounded-xl border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)] text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      {isGeneratingImage ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4" />
+                      )}
+                      {isGeneratingImage ? "Creando..." : "Imagen"}
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-center text-[10px] text-[var(--muted)] mt-6 opacity-60">
+                  * Precios sujetos a revisión final. Impuestos no incluidos.
+                </p>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
-
-      {/* RESUMEN */}
-      <div className="mt-8 grid lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-[rgb(var(--border))] p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
-            <Settings2 className="h-4 w-4" /> Desglose
-          </h3>
-          <ul className="text-sm space-y-1">
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                Base {BASES[siteType].label}
-                <Tip text="Incluye diseño, maquetación inicial, setup del proyecto y deploy.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.base)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                Páginas adicionales
-                <Tip text="Costo por cada página extra sobre las incluidas en la base.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.pagesCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                CMS
-                <Tip text="Gestión de contenido con panel y flujos de edición.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.cmsCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                E-commerce
-                <Tip text="Carrito, checkout y funcionalidades de tienda.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.shopCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                SEO
-                <Tip text="Metadatos, OpenGraph, sitemap y mejoras técnicas.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.seoCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                Copywriting
-                <Tip text="Redacción persuasiva alineada a negocio.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.copyCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                Animaciones
-                <Tip text="Microinteracciones y/o animaciones avanzadas.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.animCost)}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="inline-flex items-center gap-2">
-                Integraciones
-                <Tip text="Conexiones con APIs: pagos, CRM, auth, analytics, etc.">
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>{usd(breakdown.integrationsCost)}</span>
-            </li>
-            <li className="flex justify-between opacity-80">
-              <span className="inline-flex items-center gap-2">
-                × Complejidad
-                <Tip text={COMPLEXITY[complexity].tip}>
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>× {COMPLEXITY[complexity].multiplier}</span>
-            </li>
-            <li className="flex justify-between opacity-80">
-              <span className="inline-flex items-center gap-2">
-                × Urgencia
-                <Tip text={URGENCY[urgency].tip}>
-                  <Info className="h-3.5 w-3.5 opacity-60" />
-                </Tip>
-              </span>
-              <span>× {URGENCY[urgency].multiplier}</span>
-            </li>
-          </ul>
-
-          <div className="border-t border-[rgb(var(--border))] my-3" />
-          <div className="flex justify-between font-medium">
-            <span>Subtotal</span>
-            <span>{usd(breakdown.oneTimeSubtotal)}</span>
-          </div>
-          {breakdown.discount > 0 && (
-            <div className="flex justify-between text-green-600">
-              <span>Descuento {Math.round(FIRST_DISCOUNT_RATE * 100)}%</span>
-              <span>-{usd(breakdown.discount)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-lg font-semibold mt-2">
-            <span>Total único</span>
-            <span>{usd(breakdown.oneTimeTotal)}</span>
-          </div>
-          {breakdown.monthly > 0 && (
-            <div className="flex justify-between text-sm mt-1">
-              <span>Mantenimiento</span>
-              <span>{usd(breakdown.monthly)}/mes</span>
-            </div>
-          )}
-        </div>
-
-        {/* Hitos + CTA */}
-        <div className="rounded-2xl border border-[rgb(var(--border))] p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
-            <Clock className="h-4 w-4" /> Hitos de pago
-          </h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-[rgb(var(--border))] p-3">
-              <div className="opacity-70">Reserva (50%)</div>
-              <div className="text-lg font-semibold">
-                {usd(breakdown.upfront)}
-              </div>
-              <p className="text-xs opacity-70 mt-1">
-                Para asegurar agenda y kick-off.
-              </p>
-            </div>
-            <div className="rounded-xl border border-[rgb(var(--border))] p-3">
-              <div className="opacity-70">Entrega (50%)</div>
-              <div className="text-lg font-semibold">
-                {usd(breakdown.delivery)}
-              </div>
-              <p className="text-xs opacity-70 mt-1">
-                Al aprobar el entregable final.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-            <a
-              href={contactHref}
-              className="btn-primary inline-flex items-center gap-2"
-            >
-              <Mail className="h-4 w-4" /> Solicitar propuesta
-            </a>
-            <button
-              className="btn-ghost inline-flex items-center gap-2"
-              onClick={() => {
-                const quote = {
-                  region: REGIONS[region].label,
-                  siteType: BASES[siteType].label,
-                  pages,
-                  complexity: COMPLEXITY[complexity].label,
-                  cms: CMS[cms].label,
-                  commerce: COMMERCE[commerce].label,
-                  seo: SEO[seo].label,
-                  copy: COPY[copy].label,
-                  animations: ANIM[anim].label,
-                  integrations,
-                  urgency: URGENCY[urgency].label,
-                  maintenance: MAINTENANCE[maintenance].label,
-                  firstProject,
-                  coupon,
-                  totals: {
-                    subtotal: breakdown.oneTimeSubtotal,
-                    discount: breakdown.discount,
-                    oneTimeTotal: breakdown.oneTimeTotal,
-                    monthly: breakdown.monthly,
-                    upfront: breakdown.upfront,
-                    delivery: breakdown.delivery,
-                  },
-                };
-                const blob = new Blob([JSON.stringify(quote, null, 2)], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `cotizacion-${BASES[siteType].label
-                  .replace(/\s+/g, "-")
-                  .toLowerCase()}-${region}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              <Download className="h-4 w-4" /> Descargar JSON
-            </button>
-          </div>
-
-          <p className="text-xs opacity-70 mt-3">
-            * Precios ajustados a <strong>{REGIONS[region].label}</strong>{" "}
-            (USD). * Promo <strong>20%</strong> opcional con cupón{" "}
-            <code className="px-1 rounded bg-black/5 dark:bg-white/10">
-              FIRST20
-            </code>
-            . * No incluye costos de terceros (dominio, hosting, pasarelas).
-          </p>
-        </div>
-      </div>
-    </motion.section>
+    </div>
   );
 }

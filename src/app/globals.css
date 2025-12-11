@@ -1,4 +1,84 @@
 @import "tailwindcss";
+@import "tailwindcss";
+
+/* ===== Paleta base (HEX) ===== */
+:root {
+  color-scheme: light;
+
+  --background: #fafcff;
+  --surface: #ffffff;
+  --foreground: #101828;
+  --muted: #637381;
+  --border: #e2e8f0;
+  --ring: #3b82f6;
+
+  --primary: #2563eb;
+  --primary-strong: #1d4ed8;
+  --primary-2: #0ea5e9;
+
+  --on-primary: #ffffff;
+  --primary-foreground: #ffffff;
+
+  --navpill-bg: #f5f8ff;
+  --navpill-fg: #0b1220;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #0f1219;
+  --surface: #171c26;
+  --foreground: #eef4ff;
+  --muted: #94a3b8;
+  --border: #232d3d;
+  --ring: #38bdf8;
+
+  --primary: #3b82f6;
+  --primary-strong: #2563eb;
+  --primary-2: #38bdf8;
+
+  --navpill-bg: #e8eefc;
+  --navpill-fg: #0b1220;
+}
+
+/* ===== Estructura base ===== */
+html,
+body,
+:root {
+  height: 100%;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+}
+
+/* Inputs / focus */
+input,
+select,
+textarea {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px #3b82f659; /* ring light */
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus,
+.dark button:focus-visible,
+.dark a:focus-visible {
+  box-shadow: 0 0 0 3px #38bdf859; /* ring dark */
+}
 
 /* ===== Paleta base adaptable (HEX, sin rgb/rgba) ===== */
 :root {
