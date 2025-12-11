@@ -1,125 +1,156 @@
 "use client";
 
 /**
- * HomePage
+ * HomePage - Premium Version
  * ------------------------------------------------------------
- * - Toda la página entra con una animación suave (sin depender del scroll).
- * - Sección de colaboración como socio tecnológico conectada a /socios.
- * - Secciones de Servicios y Proyectos con layout original.
- * - JSON-LD para SEO técnico (Person).
+ * Visualmente enriquecida con patrones, mejor tipografía y estructura
+ * de contenedores tipo "Bento" para la sección de socios.
  */
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import ServiceCard from "@/components/ServiceCard";
 import ProjectCard from "@/components/ProjectCard";
+import {
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Layers,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import React from "react";
 
-// Curva de easing suave (equivalente a un easeOut bonito)
+// Configuración de Animaciones
 const EASE_OUT = [0.16, 0.84, 0.44, 1] as const;
 
-// Variantes para el contenedor principal y las secciones
 const containerVariants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
       ease: EASE_OUT,
-      when: "beforeChildren",
-      staggerChildren: 0.08,
     },
   },
 };
 
-const sectionVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: EASE_OUT,
-    },
-  },
-};
+/* =========================================================================
+ * SUB-COMPONENTES
+ * ========================================================================= */
 
 function PartnerCollabSection(): React.JSX.Element {
   return (
-    <motion.section className="py-10 md:py-16" variants={sectionVariants}>
-      <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
-        {/* Texto principal */}
-        <div>
-          <span className="badge mb-3">Nuevo · Socio tecnológico</span>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            ¿Tienes una idea de negocio{" "}
-            <span className="text-[rgb(var(--primary))]">
-              y quieres un socio tech
-            </span>
-            ?
-          </h2>
-          <p className="mt-4 text-base md:text-lg opacity-90">
-            Además de desarrollar productos digitales como servicio, también me
-            asocio con personas que quieran construir negocios reales: proyectos
-            físicos (cafeterías, gimnasios, tiendas, servicios), iniciativas
-            100% digitales (SaaS, marketplaces) o duplas donde tú lleves
-            contenido y comunidad, y yo toda la parte tecnológica.
-          </p>
-          <p className="mt-3 text-sm md:text-base opacity-80">
-            No es “te hago una web y listo”. Entramos como proyecto conjunto:
-            definimos responsabilidades, objetivos y un modelo de participación
-            claro para que ambos tengamos skin in the game.
-          </p>
+    <motion.section
+      variants={sectionVariants}
+      className="relative overflow-hidden rounded-[2.5rem] border border-[var(--border)] bg-[var(--surface)] p-8 md:p-12 lg:p-16 isolate"
+    >
+      {/* Decoración de fondo */}
+      <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-[var(--primary)]/5 rounded-full blur-[80px] pointer-events-none" />
 
-          <div className="mt-6 flex flex-wrap items-center gap-4">
-            <Link href="/socios" className="btn-primary">
-              Ver cómo funciona la colaboración
-            </Link>
-            <Link href="/contact" className="btn-ghost text-sm md:text-base">
-              Proponer un proyecto o negocio
-            </Link>
+      <div className="grid gap-12 lg:grid-cols-2 items-center">
+        {/* Columna Texto */}
+        <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--foreground)] text-[var(--background)] text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3 h-3" />
+            Socio Tecnológico
           </div>
 
-          <p className="mt-3 text-xs md:text-sm opacity-70 max-w-xl">
-            En la página de <span className="font-medium">Socios</span> explico
-            en detalle los tipos de proyectos que busco, el proceso de trabajo y
-            los modelos de colaboración posibles.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-balance">
+            ¿Tienes una idea de negocio y buscas un{" "}
+            <br className="hidden md:block" />
+            <span className="text-[var(--primary)]">CTO / Socio Tech</span>?
+          </h2>
+
+          <div className="prose prose-lg text-[var(--muted)] text-balance leading-relaxed">
+            <p>
+              Más allá de proveer servicios, me asocio con emprendedores que
+              quieren construir negocios reales. Tú pones la visión, el
+              marketing y la operación; yo pongo la tecnología robusta y
+              escalable.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 pt-2">
+            <Link href="/socios" className="btn-primary group">
+              <span>Ver modelo de colaboración</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link href="/contact" className="btn-ghost text-sm font-medium">
+              Proponer idea
+            </Link>
+          </div>
         </div>
 
-        {/* Card lateral con bullets */}
-        <div className="rounded-2xl border p-6 md:p-7 text-left">
-          <h3 className="text-lg md:text-xl font-semibold">
-            ¿Qué pongo yo sobre la mesa?
+        {/* Columna Beneficios (Card visual) */}
+        <div className="bg-[var(--background)] rounded-3xl p-8 border border-[var(--border)] shadow-sm relative">
+          <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-[var(--primary)]" />
+            ¿Qué pongo sobre la mesa?
           </h3>
-          <ul className="mt-4 space-y-2 text-sm md:text-base opacity-90">
-            <li>
-              🔹 Diseño y desarrollo completo de la parte digital: landing/app,
-              panel interno, sistemas de reservas o ventas, dashboards.
-            </li>
-            <li>
-              🔹 Integración de pagos, analítica y automatizaciones para que el
-              negocio no dependa de procesos manuales ni planillas infinitas.
-            </li>
-            <li>
-              🔹 Visión de producto: priorizar features, construir MVPs
-              realistas y medir tracción desde el día uno.
-            </li>
-            <li>
-              🔹 Modelo de colaboración flexible: participación en utilidades y
-              roadmap claro para crecer juntos en el largo plazo.
-            </li>
+
+          <ul className="space-y-5">
+            {[
+              {
+                text: "Desarrollo integral (Web, App, Dashboards)",
+                icon: CodeIcon,
+              },
+              { text: "Automatización de procesos y pagos", icon: TrendingUp },
+              { text: "Estrategia de producto y MVP", icon: Users },
+              {
+                text: "Compromiso a largo plazo (Skin in the game)",
+                icon: CheckCircle2,
+              },
+            ].map((item, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 text-sm md:text-base opacity-90"
+              >
+                <item.icon className="w-5 h-5 text-[var(--primary)] shrink-0 mt-0.5" />
+                <span>{item.text}</span>
+              </li>
+            ))}
           </ul>
-          <p className="mt-4 text-xs md:text-sm opacity-70">
-            Busco pocos proyectos, pero muy serios. Si tienes una idea con
-            potencial real y estás dispuesto a comprometerte, podemos ver si
-            tiene sentido construirlo en equipo.
-          </p>
         </div>
       </div>
     </motion.section>
   );
 }
+
+// Icono auxiliar para el map
+const CodeIcon = (props: any) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+
+/* =========================================================================
+ * COMPONENTE PRINCIPAL
+ * ========================================================================= */
 
 export default function HomePage(): React.JSX.Element {
   const services = [
@@ -137,14 +168,14 @@ export default function HomePage(): React.JSX.Element {
     {
       title: "Dashboards & paneles a medida",
       description:
-        "UI limpia y productiva con tablas, filtros, gráficos y estados.",
+        "UI limpia y productiva con tablas, filtros, gráficos y estados complejos.",
       points: ["Rendimiento en listas", "Accesibilidad", "Dark/Light mode"],
       icon: "gauge",
     },
     {
       title: "SEO & optimización técnica",
       description:
-        "Estructura, metaetiquetas y JSON-LD para ganar visibilidad.",
+        "Estructura, metaetiquetas y JSON-LD para ganar visibilidad orgánica.",
       points: ["Core Web Vitals", "Sitemaps automáticos", "OpenGraph"],
       icon: "search",
     },
@@ -181,80 +212,179 @@ export default function HomePage(): React.JSX.Element {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      className="space-y-24 md:space-y-32 pb-20"
     >
-      {/* SEO técnico: schema Person */}
+      {/* SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* HERO */}
-      <motion.section className="py-8 md:py-16" variants={sectionVariants}>
-        <div className="text-center max-w-3xl mx-auto">
-          <span className="badge mb-4">Disponible para proyectos selectos</span>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-            Diseño y desarrollo{" "}
-            <span className="text-[rgb(var(--primary))]">web moderno</span> que
-            impulsa resultados
+      {/* HERO SECTION */}
+      <motion.section
+        variants={sectionVariants}
+        className="relative pt-12 md:pt-20 pb-12 text-center isolate"
+      >
+        {/* Patrón de fondo sutil */}
+        <div
+          className="absolute inset-0 -z-10 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--foreground) 1px, transparent 0)`,
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* Glow central */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--primary)]/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+        <div className="max-w-4xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] text-sm font-medium text-[var(--muted)] shadow-sm backdrop-blur-sm"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Disponible para proyectos selectos
+          </motion.div>
+
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-balance mb-6 text-[var(--foreground)]">
+            Diseño y desarrollo web <br className="hidden md:block" />
+            <span className="text-[var(--primary)] relative">
+              moderno
+              {/* Subrayado decorativo */}
+              <svg
+                className="absolute w-full h-3 -bottom-1 left-0 text-[var(--primary)] opacity-30"
+                viewBox="0 0 100 10"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0 5 Q 50 10 100 5"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+              </svg>
+            </span>{" "}
+            que impulsa resultados.
           </h1>
-          <p className="mt-4 text-lg opacity-90">
-            Soy Jorge, construyo interfaces hermosas, rápidas y accesibles con
-            Next.js y una obsesión por el detalle.
+
+          <p className="mt-6 text-xl text-[var(--muted)] max-w-2xl mx-auto text-balance leading-relaxed">
+            Soy Jorge. Construyo interfaces hermosas, rápidas y accesibles con
+            Next.js, obsesionado con el detalle y la experiencia de usuario.
           </p>
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <Link href="/contact" className="btn-primary">
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/contact"
+              className="btn-primary w-full sm:w-auto h-12 px-8 text-base"
+            >
               Agenda una llamada
             </Link>
-            <Link href="/portfolio" className="btn-ghost">
+            <Link
+              href="/portfolio"
+              className="btn-ghost w-full sm:w-auto h-12 px-8 text-base bg-[var(--surface)] shadow-sm border-[var(--border)]"
+            >
               Ver portafolio
             </Link>
           </div>
         </div>
       </motion.section>
 
-      {/* SECCIÓN: Socio tecnológico conectada con /socios */}
-      <PartnerCollabSection />
+      {/* SECCIÓN SOCIO (Contenedor limitado al ancho del sitio) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PartnerCollabSection />
+      </div>
 
       {/* SERVICIOS */}
-      <motion.section className="py-10 md:py-16" variants={sectionVariants}>
-        <h2 className="text-2xl font-bold mb-6">Servicios</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+      <motion.section
+        variants={sectionVariants}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Servicios Especializados
+            </h2>
+            <p className="mt-2 text-[var(--muted)]">
+              Soluciones técnicas para cada etapa de crecimiento.
+            </p>
+          </div>
+          <Link
+            href="/services"
+            className="text-sm font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+          >
+            Ver todos <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {services.map((s) => (
-            <motion.div key={s.title} variants={sectionVariants}>
+            <div key={s.title} className="h-full">
               <ServiceCard {...s} />
-            </motion.div>
+            </div>
           ))}
         </div>
       </motion.section>
 
       {/* PROYECTOS */}
-      <motion.section className="py-10 md:py-16" variants={sectionVariants}>
-        <h2 className="text-2xl font-bold mb-6">Proyectos</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+      <motion.section
+        variants={sectionVariants}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Proyectos Destacados
+            </h2>
+            <p className="mt-2 text-[var(--muted)]">
+              Productos reales construidos desde cero.
+            </p>
+          </div>
+          <Link
+            href="/portfolio"
+            className="text-sm font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+          >
+            Explorar portafolio <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
           {projects.map((p) => (
-            <motion.div key={p.title} variants={sectionVariants}>
+            <motion.div
+              key={p.title}
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
               <ProjectCard {...p} />
             </motion.div>
           ))}
         </div>
-        <div className="mt-8 text-center">
-          <Link href="/services" className="btn-primary">
-            Ver lista completa de servicios
-          </Link>
-        </div>
       </motion.section>
 
       {/* CTA FINAL */}
-      <motion.section className="py-10 md:py-16" variants={sectionVariants}>
-        <div className="rounded-2xl p-8 border text-center">
-          <h3 className="text-xl md:text-2xl font-semibold">
+      <motion.section
+        variants={sectionVariants}
+        className="max-w-4xl mx-auto px-4"
+      >
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-[var(--foreground)] text-[var(--background)] p-10 md:p-16 text-center">
+          {/* Decoración CTA */}
+          <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_45%,rgba(255,255,255,0.05)_50%,transparent_55%)] bg-[length:200%_200%] animate-[shimmer_4s_infinite]" />
+
+          <h3 className="relative z-10 text-3xl md:text-4xl font-bold mb-4 tracking-tight">
             ¿Listo para elevar tu producto?
           </h3>
-          <p className="mt-2 opacity-90">
-            Hagamos una primera sesión de 30 minutos para entender tu reto.
+          <p className="relative z-10 text-lg opacity-80 mb-8 max-w-xl mx-auto">
+            Hagamos una sesión de descubrimiento de 30 minutos. Sin compromiso,
+            solo para entender tu reto técnico.
           </p>
-          <Link href="/contact" className="btn-primary mt-4 inline-flex">
-            Contactar
+          <Link
+            href="/contact"
+            className="relative z-10 inline-flex items-center justify-center h-14 px-8 rounded-2xl bg-[var(--background)] text-[var(--foreground)] font-bold text-lg hover:scale-105 transition-transform"
+          >
+            Iniciar Conversación
           </Link>
         </div>
       </motion.section>

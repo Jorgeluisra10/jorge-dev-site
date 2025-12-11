@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  type Variants,
+  type TargetAndTransition,
+} from "framer-motion";
 import {
   Sparkles,
   Rocket,
@@ -16,233 +21,366 @@ import {
   Linkedin,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Cpu,
+  Database,
+  Wrench,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-const fade = (d = 0) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.45, delay: d } },
+/* ==================== CONFIG & ANIMATIONS ==================== */
+
+const fade = (d = 0): Variants => ({
+  initial: { opacity: 0, y: 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, delay: d, ease: "easeOut" },
+  },
 });
 
-const slide = {
-  initial: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
-  animate: { x: 0, opacity: 1, transition: { duration: 0.35 } },
+const slide: {
+  initial: (dir: number) => TargetAndTransition;
+  animate: TargetAndTransition;
+  exit: (dir: number) => TargetAndTransition;
+} = {
+  initial: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
+  },
   exit: (dir: number) => ({
-    x: dir > 0 ? -40 : 40,
+    x: dir > 0 ? "-20%" : "20%",
     opacity: 0,
-    transition: { duration: 0.25 },
+    transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
   }),
 };
 
+/* ==================== COMPONENT ==================== */
+
 export default function AboutPage() {
-  // 🖼️ Carrusel IMNOBA (rutas string desde /public/images)
+  // 🖼️ Carrusel IMNOBA
   const gallery = useMemo(
     () => [
-      { src: "/images/imnoba.png", alt: "Imnoba — home" },
-      { src: "/images/imnobaAgent.png", alt: "Imnoba — panel de agente" },
-      {
-        src: "/images/ImnobaDetail.png",
-        alt: "Imnoba — detalle de publicación",
-      },
-      { src: "/images/ImnobaAdmin.png", alt: "Imnoba — panel administrativo" },
-      { src: "/images/imnobaLogin.png", alt: "Imnoba — pantalla de acceso" },
+      { src: "/images/imnoba.png", alt: "Imnoba — Home Principal" },
+      { src: "/images/imnobaAgent.png", alt: "Imnoba — Panel de Agente" },
+      { src: "/images/ImnobaDetail.png", alt: "Imnoba — Detalle de Propiedad" },
+      { src: "/images/ImnobaAdmin.png", alt: "Imnoba — Panel Administrativo" },
+      { src: "/images/imnobaLogin.png", alt: "Imnoba — Pantalla de Acceso" },
     ],
     []
   );
 
-  const [idx, setIdx] = useState(0);
-  const [dir, setDir] = useState(1);
+  const [idx, setIdx] = useState<number>(0);
+  const [dir, setDir] = useState<number>(1);
+
   const go = (next: number) => {
     setDir(next > idx ? 1 : -1);
     setIdx((prev) => (next + gallery.length) % gallery.length);
   };
 
+  // Stack organizado para mejor lectura
+  const stack = {
+    core: ["Next.js 14", "React", "TypeScript", "Tailwind CSS"],
+    backend: ["Supabase", "Node.js", "PostgreSQL", "Edge Functions"],
+    tools: ["Framer Motion", "Zod", "Playwright", "Figma"],
+  };
+
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12 md:py-16">
-      {/* HERO CENTRADO */}
+    <section className="relative max-w-5xl mx-auto px-4 py-12 md:py-20 overflow-hidden">
+      {/* BACKGROUND PATTERN (Coherencia con Home/Services) */}
+      <div
+        className="absolute inset-0 -z-10 opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, var(--foreground) 1px, transparent 0)`,
+          backgroundSize: "24px 24px",
+        }}
+      />
+
+      {/* ==================== HERO PROFILE ==================== */}
       <motion.div
         {...fade(0)}
-        className="flex flex-col items-center text-center gap-5"
+        className="flex flex-col items-center text-center"
       >
-        <div className="relative h-32 w-32 md:h-36 md:w-36 rounded-2xl overflow-hidden ring-1 ring-[var(--border)]">
-          <Image
-            src="/images/perfil.jpg"
-            alt="Jorge Luis Rodríguez"
-            fill
-            priority
-            quality={95}
-            sizes="144px"
-            className="object-cover object-center"
+        {/* Avatar con anillo y glow */}
+        <div className="relative group mb-8">
+          <div className="absolute -inset-1 bg-gradient-to-tr from-[var(--primary)] to-[var(--border)] rounded-full opacity-20 group-hover:opacity-40 blur transition duration-500" />
+          <div className="relative h-32 w-32 md:h-40 md:w-40 rounded-full overflow-hidden border-4 border-[var(--surface)] shadow-xl">
+            <Image
+              src="/images/perfil.jpg"
+              alt="Jorge Luis Rodríguez"
+              fill
+              priority
+              quality={95}
+              className="object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-500"
+            />
+          </div>
+          <div
+            className="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-4 border-[var(--surface)]"
+            title="Disponible"
           />
         </div>
 
-        <div className="max-w-2xl">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Jorge Luis Rodríguez
-          </h1>
-          <p className="mt-2 leading-relaxed opacity-90">
-            <strong>Front-End & Product Engineer</strong> con foco en{" "}
-            <em>experiencias pulidas</em>, <em>accesibilidad</em> y{" "}
-            <em>performance</em>. Construyo productos con{" "}
-            <strong>Next.js</strong>, <strong>Tailwind</strong> y{" "}
-            <strong>Framer Motion</strong>, cuidando el detalle desde la
-            arquitectura hasta la micro-interacción.
-          </p>
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-balance">
+          Jorge Luis Rodríguez
+        </h1>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/contact" className="btn-primary">
-              Iniciar conversación
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <Link href="/portfolio" className="btn-ghost">
-              Ver portafolio
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <div className="flex items-center gap-3 text-sm opacity-80">
-              <a
-                href="https://github.com/Jorgeluisra10"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:underline"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
-              <a
-                href="https://www.linkedin.com/in/jorgeluisra10/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:underline"
-              >
-                <Linkedin className="h-4 w-4" />
-                LinkedIn
-              </a>
-            </div>
-          </div>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-sm font-bold mb-6">
+          <Code2 className="w-4 h-4" />
+          Front-End & Product Engineer
         </div>
-      </motion.div>
 
-      {/* VALUE PILLARS */}
-      <motion.div
-        {...fade(0.1)}
-        className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {[
-          {
-            icon: <Rocket className="h-5 w-5" />,
-            title: "Entrega tangible",
-            desc: "Resultados medibles y listos para negocio.",
-          },
-          {
-            icon: <Gauge className="h-5 w-5" />,
-            title: "Performance",
-            desc: "CWV, tiempos bajos y UX fluida.",
-          },
-          {
-            icon: <Accessibility className="h-5 w-5" />,
-            title: "Accesibilidad",
-            desc: "Buenas prácticas WCAG desde el diseño.",
-          },
-          {
-            icon: <Sparkles className="h-5 w-5" />,
-            title: "Micro-interacciones",
-            desc: "Animaciones sutiles que elevan la percepción.",
-          },
-        ].map((p, i) => (
-          <div
-            key={i}
-            className="card p-4 md:p-5 flex items-start gap-3 card-accent"
+        <p className="text-lg md:text-xl text-[var(--muted)] max-w-2xl text-balance leading-relaxed">
+          Especializado en{" "}
+          <strong className="text-[var(--foreground)]">
+            experiencias pulidas
+          </strong>
+          , accesibilidad y performance. Construyo productos con Next.js
+          cuidando el detalle desde la arquitectura hasta la micro-interacción.
+        </p>
+
+        {/* Social Links */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/contact"
+            className="btn-primary shadow-lg shadow-[var(--primary)]/20"
           >
-            <div className="badge">{p.icon} Pilar</div>
-            <div>
-              <h3 className="font-medium">{p.title}</h3>
-              <p className="text-sm opacity-80">{p.desc}</p>
-            </div>
+            Iniciar conversación
+          </Link>
+          <a
+            href="/cv-jorge-rodriguez.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost border-[var(--border)] bg-[var(--surface)]"
+          >
+            <Download className="w-4 h-4" /> Descargar CV
+          </a>
+          <div className="flex gap-2 pl-2 md:border-l border-[var(--border)]">
+            {[
+              {
+                icon: Github,
+                href: "https://github.com/Jorgeluisra10",
+                label: "GitHub",
+              },
+              {
+                icon: Linkedin,
+                href: "https://www.linkedin.com/in/jorgeluisra10/",
+                label: "LinkedIn",
+              },
+            ].map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full hover:bg-[var(--border)]/50 transition-colors text-[var(--muted)] hover:text-[var(--foreground)]"
+                aria-label={social.label}
+              >
+                <social.icon className="w-5 h-5" />
+              </a>
+            ))}
           </div>
-        ))}
+        </div>
       </motion.div>
 
-      {/* FEATURED CASE: IMNOBA (un solo carrusel, sin blur) */}
-      <motion.section {...fade(0.2)} className="mt-14">
-        <div className="flex items-center gap-2 mb-3">
-          <Building2 className="h-5 w-5" />
-          <h2 className="text-xl md:text-2xl font-semibold tracking-tight">
-            Caso destacado: Imnoba (Propiedades & Autos)
-          </h2>
+      {/* ==================== VALUE PILLARS ==================== */}
+      <motion.div {...fade(0.15)} className="mt-20">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-px flex-1 bg-[var(--border)]" />
+          <span className="text-sm font-bold uppercase tracking-widest text-[var(--muted)]">
+            Filosofía de Trabajo
+          </span>
+          <div className="h-px flex-1 bg-[var(--border)]" />
         </div>
 
-        <div className="card p-6 md:p-8 grid gap-8 lg:grid-cols-2">
-          <div className="space-y-4">
-            <p className="leading-relaxed">
-              <strong>Imnoba</strong> es un marketplace con{" "}
-              <em>filtros avanzados</em>, paneles multi-rol y autenticación.
-              Diseñé e implementé el producto end-to-end con foco en{" "}
-              <em>claridad</em>, <em>rendimiento</em> y <em>escalabilidad</em>.
-              Actualmente está en desarrollo la{" "}
-              <strong>app móvil con React Native</strong>.
-            </p>
-
-            <ul className="space-y-2 text-sm">
-              {[
-                "Búsquedas facetadas y estados de carga/errores cuidados.",
-                "Paneles para administración y moderación de contenido.",
-                "UI consistente, dark/light mode y componentes accesibles.",
-              ].map((t, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#2563EB]" />
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {[
-                { k: "CWV", v: "Lighthouse 95+" },
-                { k: "Listados", v: "Filtros en ms" },
-                { k: "Arquitectura", v: "Mantenible y escalable" },
-              ].map((s) => (
-                <div
-                  key={s.k}
-                  className="rounded-xl border border-[var(--border)] p-3"
-                >
-                  <div className="text-xs opacity-70">{s.k}</div>
-                  <div className="font-semibold">{s.v}</div>
-                </div>
-              ))}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              icon: Rocket,
+              title: "Entrega tangible",
+              desc: "Resultados medibles y listos para negocio.",
+            },
+            {
+              icon: Gauge,
+              title: "Performance",
+              desc: "CWV, tiempos bajos y UX fluida.",
+            },
+            {
+              icon: Accessibility,
+              title: "Accesibilidad",
+              desc: "Buenas prácticas WCAG desde el diseño.",
+            },
+            {
+              icon: Sparkles,
+              title: "Detalle Visual",
+              desc: "Animaciones que elevan la percepción.",
+            },
+          ].map((p, i) => (
+            <div
+              key={i}
+              className="group p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--primary)]/30 transition-all hover:shadow-lg hover:-translate-y-1"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform">
+                <p.icon className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">{p.title}</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">
+                {p.desc}
+              </p>
             </div>
+          ))}
+        </div>
+      </motion.div>
 
-            <div className="flex flex-wrap gap-2 pt-2">
-              {[
-                "Next.js",
-                "Tailwind",
-                "Framer Motion",
-                "Supabase",
-                "Vercel",
-                "React Native",
-              ].map((t) => (
-                <span key={t} className="badge">
+      {/* ==================== TECH STACK (Bento Grid) ==================== */}
+      <motion.div {...fade(0.2)} className="mt-20">
+        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+          <Cpu className="w-6 h-6 text-[var(--primary)]" />
+          Stack Tecnológico
+        </h2>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Core */}
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+            <div className="flex items-center gap-2 mb-4 text-[var(--primary)]">
+              <Code2 className="w-5 h-5" />
+              <h3 className="font-bold text-sm uppercase tracking-wide">
+                Core Frontend
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {stack.core.map((t) => (
+                <span
+                  key={t}
+                  className="px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-sm font-medium"
+                >
                   {t}
                 </span>
               ))}
             </div>
+          </div>
 
-            <div className="pt-2 flex gap-3">
-              <Link href="/portfolio" className="btn-ghost">
-                Ver proyecto
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-              <Link href="/contact" className="btn-primary">
-                Solicitar propuesta
+          {/* Backend */}
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+            <div className="flex items-center gap-2 mb-4 text-purple-500">
+              <Database className="w-5 h-5" />
+              <h3 className="font-bold text-sm uppercase tracking-wide">
+                Backend & Data
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {stack.backend.map((t) => (
+                <span
+                  key={t}
+                  className="px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-sm font-medium"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Tools */}
+          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+            <div className="flex items-center gap-2 mb-4 text-orange-500">
+              <Wrench className="w-5 h-5" />
+              <h3 className="font-bold text-sm uppercase tracking-wide">
+                Tools & Quality
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {stack.tools.map((t) => (
+                <span
+                  key={t}
+                  className="px-3 py-1.5 rounded-lg bg-[var(--background)] border border-[var(--border)] text-sm font-medium"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ==================== FEATURED CASE (Imnoba) ==================== */}
+      <motion.section
+        {...fade(0.25)}
+        className="mt-20 pt-10 border-t border-[var(--border)]"
+      >
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-2 text-[var(--primary)]">
+              <Building2 className="w-5 h-5" />
+              <span className="text-sm font-bold uppercase tracking-wider">
+                Proyecto Destacado
+              </span>
+            </div>
+            <h2 className="text-3xl font-black tracking-tight">Imnoba</h2>
+            <p className="text-[var(--muted)]">
+              Marketplace de Propiedades & Autos
+            </p>
+          </div>
+          <Link
+            href="/portfolio"
+            className="btn-ghost text-sm font-medium group"
+          >
+            Ver caso de estudio completo{" "}
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_1.5fr] gap-8 items-start">
+          {/* Texto y Stats */}
+          <div className="space-y-6">
+            <p className="text-[var(--muted)] leading-relaxed">
+              Diseñé e implementé este producto end-to-end. Un marketplace
+              complejo con
+              <strong className="text-[var(--foreground)]">
+                {" "}
+                filtros facetados instantáneos
+              </strong>
+              , paneles multi-rol y autenticación robusta.
+            </p>
+
+            <div className="flex flex-col gap-3">
+              {[
+                "Búsquedas facetadas en milisegundos.",
+                "Paneles de administración y moderación.",
+                "Optimización extrema (Lighthouse 95+).",
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3 text-sm">
+                  <CheckCircle2 className="w-5 h-5 text-[var(--primary)] shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4">
+              <Link
+                href="https://www.imnoba.com"
+                target="_blank"
+                className="btn-primary w-full justify-center md:w-auto"
+              >
+                Visitar sitio en vivo
               </Link>
             </div>
           </div>
 
-          {/* Carrusel único, nítido */}
-          <div className="relative">
-            <div className="relative aspect-video rounded-2xl overflow-hidden ring-1 ring-[var(--border)] bg-[color-mix(in_oklab,var(--card),transparent_0%)]">
-              <AnimatePresence custom={dir} mode="popLayout">
+          {/* Carrusel (Estilo Browser Window) */}
+          <div className="relative group rounded-xl overflow-hidden shadow-2xl bg-[var(--surface)] border border-[var(--border)]">
+            {/* Browser Header Decor */}
+            <div className="h-8 bg-[var(--background)] border-b border-[var(--border)] flex items-center px-4 gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-400/80" />
+              <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
+              <div className="w-3 h-3 rounded-full bg-green-400/80" />
+              <div className="ml-4 flex-1 h-4 rounded-full bg-[var(--surface)] opacity-50 max-w-[200px]" />
+            </div>
+
+            <div className="relative aspect-video bg-[var(--background)] overflow-hidden">
+              <AnimatePresence initial={false} custom={dir} mode="popLayout">
                 <motion.div
-                  key={gallery[idx]?.src ?? idx}
+                  key={idx}
                   custom={dir}
                   variants={slide}
                   initial="initial"
@@ -251,144 +389,48 @@ export default function AboutPage() {
                   className="absolute inset-0"
                 >
                   <Image
-                    src={gallery[idx]?.src ?? "/images/imnobaAgent.png"}
-                    alt={gallery[idx]?.alt ?? "Imnoba — pantalla"}
+                    src={gallery[idx]?.src}
+                    alt={gallery[idx]?.alt}
                     fill
-                    quality={100}
-                    sizes="(min-width:1280px) 768px, (min-width:1024px) 640px, (min-width:768px) 700px, 100vw"
-                    className="object-contain"
-                    priority={idx <= 1}
-                    fetchPriority={idx <= 1 ? "high" : "auto"}
+                    className="object-cover object-top"
+                    sizes="(min-width: 1024px) 600px, 100vw"
                   />
                 </motion.div>
               </AnimatePresence>
-            </div>
 
-            {/* Controles flotantes */}
-            <button
-              aria-label="Anterior"
-              className="absolute left-3 top-1/2 -translate-y-1/2 btn-ghost rounded-full p-2"
-              onClick={() => go((idx - 1 + gallery.length) % gallery.length)}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              aria-label="Siguiente"
-              className="absolute right-3 top-1/2 -translate-y-1/2 btn-ghost rounded-full p-2"
-              onClick={() => go((idx + 1) % gallery.length)}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-
-            {/* Dots */}
-            <div className="mt-3 flex items-center justify-center gap-2">
-              {gallery.map((_, i) => (
+              {/* Controls Overlay */}
+              <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <button
-                  key={i}
-                  aria-label={`Ir a slide ${i + 1}`}
-                  onClick={() => go(i)}
-                  className={`h-2.5 rounded-full transition-all ${
-                    i === idx
-                      ? "w-6 bg-[color:var(--primary-2)]"
-                      : "w-2.5 bg-[color:var(--border)]"
-                  }`}
-                />
-              ))}
+                  onClick={() => go(idx - 1)}
+                  className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur transition-all"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => go(idx + 1)}
+                  className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur transition-all"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Indicators */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur">
+                {gallery.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === idx ? "w-4 bg-white" : "w-1.5 bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </motion.section>
-
-      {/* PRINCIPIOS + STACK */}
-      <motion.section
-        {...fade(0.25)}
-        className="mt-14 grid gap-6 lg:grid-cols-2"
-      >
-        <div className="card p-6 md:p-8">
-          <h3 className="text-lg md:text-xl font-semibold tracking-tight flex items-center gap-2">
-            <Code2 className="h-5 w-5" />
-            Principios de trabajo
-          </h3>
-          <ul className="mt-4 space-y-3 text-sm leading-relaxed">
-            <li>
-              <strong>Diseño orientado a resultados:</strong> la UI cuenta si
-              impulsa métricas (conversión, retención, claridad).
-            </li>
-            <li>
-              <strong>Micro-interacciones con intención:</strong> animaciones
-              sutiles para guiar atención sin distraer.
-            </li>
-            <li>
-              <strong>Arquitectura simple y sostenible:</strong> componentes
-              reutilizables, tipado sólido y DX cuidada.
-            </li>
-            <li>
-              <strong>Accesibilidad por defecto:</strong> semántica, foco,
-              contraste y navegación por teclado.
-            </li>
-          </ul>
-        </div>
-
-        <div className="card p-6 md:p-8">
-          <h3 className="text-lg md:text-xl font-semibold tracking-tight flex items-center gap-2">
-            <Code2 className="h-5 w-5" />
-            Stack preferido
-          </h3>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              "Next.js",
-              "TypeScript",
-              "Tailwind",
-              "Framer Motion",
-              "Supabase",
-              "Vercel",
-              "Zod + RHF",
-              "Playwright",
-              "PNPM/NPM",
-            ].map((s) => (
-              <div
-                key={s}
-                className="rounded-xl border border-[var(--border)] px-3 py-2 text-sm flex items-center justify-center"
-              >
-                {s}
-              </div>
-            ))}
-          </div>
-          <p className="text-xs opacity-70 mt-4">
-            También trabajo con CMS headless (Sanity/Contentful), analytics y
-            SEO técnico.
-          </p>
-        </div>
-      </motion.section>
-
-      {/* CTA FINAL */}
-      <motion.div {...fade(0.3)} className="mt-14">
-        <div className="card p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold tracking-tight">
-              ¿Tienes un proyecto en mente?
-            </h3>
-            <p className="opacity-80">
-              Te propongo una demo rápida con estimaciones claras y primeras
-              ideas de valor.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Link href="/contact" className="btn-primary">
-              Iniciar conversación
-            </Link>
-            <a
-              href="/cv-jorge-rodriguez.pdf"
-              className="btn-ghost"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Descargar CV
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-      </motion.div>
     </section>
   );
 }

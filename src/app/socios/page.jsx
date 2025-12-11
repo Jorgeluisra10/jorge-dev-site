@@ -1,65 +1,72 @@
 "use client";
 
-/**
- * SociosPage
- * ------------------------------------------------------------
- * Página específica para explicar la propuesta de colaboración:
- * - Hero con propuesta clara de co-creación.
- * - Secciones para negocios físicos, proyectos digitales y duplas contenido+tech.
- * - Ilustraciones en /public/images.
- */
-
 import Link from "next/link";
 import Image from "next/image";
-import MotionFade from "@/components/MotionFade";
+import MotionFade from "@/components/MotionFade"; // Asumo que tienes este componente, si no, usa motion.div simple
+import {
+  Store,
+  Laptop2,
+  Users,
+  CheckCircle2,
+  ArrowRight,
+  HelpCircle,
+  Briefcase,
+  Target,
+} from "lucide-react";
 
 export default function SociosPage() {
   const steps = [
     {
-      title: "1. Me cuentas tu idea con contexto",
+      title: "1. Contexto inicial",
       description:
-        "Rellenas un formulario corto donde explicas qué quieres construir, qué aportas tú (experiencia, comunidad, capital, tiempo) y qué esperas de un socio tecnológico.",
+        "Rellenas un formulario corto. No necesito un Business Plan de 100 páginas, solo entender qué quieres construir, qué aportas tú y qué esperas de un socio tech.",
     },
     {
-      title: "2. Llamada de evaluación",
+      title: "2. Química y Negocio",
       description:
-        "Agendamos una videollamada para bajar la idea a tierra: modelo de negocio, riesgos, supuestos, roadmap inicial y si realmente encajamos para trabajar juntos.",
+        "Videollamada para bajar la idea a tierra: modelo de ingresos, riesgos, competencia y, lo más importante, ver si encajamos para trabajar juntos.",
     },
     {
-      title: "3. Propuesta de colaboración",
+      title: "3. El Acuerdo",
       description:
-        "Defino qué puedo aportar (producto digital, sistemas, automatización, etc.) y acordamos un modelo justo de participación, hitos y responsabilidades.",
+        "Defino mi aporte (producto, sistemas, automatización) y acordamos un modelo justo de participación (Equity, Revenue Share o Híbrido).",
     },
     {
-      title: "4. Construcción y evolución",
+      title: "4. Construcción",
       description:
-        "Creamos un MVP, medimos tracción y vamos iterando. Si el proyecto crece, la relación también: nuevas funcionalidades, procesos más sólidos y visión de largo plazo.",
+        "Sprint de MVP. Nada de meses de desarrollo en la cueva. Lanzamos rápido, medimos tracción y evolucionamos el producto con datos reales.",
     },
   ];
 
   const projectTypes = [
     {
-      label: "Negocios físicos con capa digital",
+      icon: Store,
+      label: "Negocio Físico + Capa Digital",
+      desc: "Llevamos la operación física al siguiente nivel.",
       bullets: [
-        "Cafeterías, restaurantes, barberías, gimnasios, tiendas físicas.",
-        "Reservas online, pedidos, membresías, programas de fidelización.",
-        "Panel interno para manejar clientes, ventas y métricas.",
+        "Cafeterías, gimnasios, tiendas.",
+        "Sistemas de reservas y fidelización.",
+        "Automatización de pedidos y stock.",
       ],
     },
     {
-      label: "Proyectos 100% digitales",
+      icon: Laptop2,
+      label: "Nativo Digital / SaaS",
+      desc: "Productos que viven en internet.",
       bullets: [
-        "SaaS pequeños, marketplaces nicho, plataformas de contenido.",
-        "Productos para resolver problemas específicos en la vida real.",
-        "Sistemas internos para automatizar procesos de negocios existentes.",
+        "Micro-SaaS y Marketplaces nicho.",
+        "Plataformas de contenido exclusivo.",
+        "Herramientas B2B específicas.",
       ],
     },
     {
-      label: "Duplas: contenido + tecnología",
+      icon: Users,
+      label: "Dupla Creador + Tech",
+      desc: "Tú tienes la audiencia, yo el motor.",
       bullets: [
-        "Tú te encargas de redes, comunidad y ventas.",
-        "Yo construyo todo el backoffice digital (web, funnels, automatizaciones).",
-        "Ideal para creadores que quieren pasar de audiencia a producto.",
+        "Tú: Contenido, comunidad, ventas.",
+        "Yo: Web, funnels, automatizaciones.",
+        "Monetización de audiencias.",
       ],
     },
   ];
@@ -67,113 +74,156 @@ export default function SociosPage() {
   const faq = [
     {
       q: "¿Necesito tener capital para aplicar?",
-      a: "No es obligatorio, pero ayuda. Lo importante es que la idea tenga sentido, tú puedas aportar algo real (tiempo, experiencia, comunidad, local, proveedores) y haya compromiso. No estoy buscando solo ideas, sino personas que quieran ejecutar.",
+      a: "No es obligatorio, pero ayuda. Lo vital es que la idea tenga tracción potencial y tú aportes valor real (tiempo operativo, local, contactos, proveedores). Busco socios que ejecutan, no solo 'ideas'.",
     },
     {
-      q: "¿Siempre trabajas a porcentaje o a veces cobras como servicio?",
-      a: "Depende del proyecto. La prioridad de esta página son acuerdos de colaboración con participación, pero si tu caso encaja mejor como servicio puntual (ej. solo una web o dashboard), podemos verlo aparte.",
+      q: "¿Siempre trabajas a porcentaje?",
+      a: "Es la prioridad de esta página: riesgo compartido. Sin embargo, si tu proyecto requiere mucha carga operativa inicial mía sin validación, podemos plantear un modelo híbrido (fee reducido + % menor).",
     },
     {
       q: "¿En qué porcentaje sueles moverte?",
-      a: "Varía según el tipo de proyecto y el esfuerzo tech que implique. Puede ir desde una participación moderada si solo construyo una parte específica, hasta un rol más fuerte si la capa digital es el corazón del negocio.",
+      a: "Depende radicalmente del proyecto. Desde un 10-15% si soy un socio tecnológico consultivo, hasta un 50% si el producto digital ES el negocio completo.",
     },
     {
-      q: "¿Qué pasa si el proyecto no despega?",
-      a: "Intentamos basarnos en datos: definimos hitos, tiempos razonables y puntos de revisión. Si no hay tracción, podemos ajustar la estrategia o cerrar el ciclo con claridad, sin dramas ni sorpresas.",
+      q: "¿Qué pasa si no funciona?",
+      a: "Fail fast. Definimos hitos de revisión (3, 6 meses). Si no hay tracción, cerramos ordenadamente. Sin ataduras eternas ni letras chicas. Las relaciones claras conservan amistades.",
     },
   ];
 
   return (
-    <main className="py-10 md:py-16">
-      {/* HERO (sin MotionFade para que aparezca inmediato) */}
-      <section className="pb-12 md:pb-16">
-        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-center">
-          <div>
-            <span className="badge mb-4">
-              Colaboremos en realidad · No solo una web
-            </span>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight">
-              Co-creo{" "}
-              <span className="text-[rgb(var(--primary))]">
-                negocios y proyectos
-              </span>{" "}
-              como socio tecnológico, no como proveedor más.
-            </h1>
-            <p className="mt-4 text-base md:text-lg opacity-90 max-w-xl">
-              Si tienes una idea de negocio —físico o digital— y estás dispuesto
-              a poner trabajo real, yo me encargo de la parte tecnológica:
-              producto, sistemas, automatización y experiencia digital. Podemos
-              construir algo juntos donde ambos tengamos skin in the game.
-            </p>
-            <p className="mt-3 text-sm md:text-base opacity-80 max-w-xl">
-              Esto aplica tanto para negocios de calle (cafeterías, tiendas,
-              servicios) como para creadores de contenido, proyectos SaaS,
-              marketplaces nicho y cualquier iniciativa donde la tecnología sea
-              una pieza clave.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/contact" className="btn-primary">
-                Proponer un proyecto
-              </Link>
-              <Link href="#como-funciona" className="btn-ghost">
-                Ver cómo funciona
-              </Link>
-            </div>
-          </div>
+    <main className="pb-20">
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative pt-12 md:pt-20 pb-16 md:pb-24 border-b border-[var(--border)] overflow-hidden">
+        {/* Dot Pattern Background */}
+        <div
+          className="absolute inset-0 -z-10 opacity-[0.03]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--foreground) 1px, transparent 0)`,
+            backgroundSize: "32px 32px",
+          }}
+        />
 
-          {/* Ilustración principal (avatar caricatura / escena) */}
-          <div className="relative mx-auto w-40 sm:w-56 md:w-full max-w-sm">
-            <div className="relative aspect-[4/5] rounded-3xl border shadow-sm overflow-hidden">
-              <Image
-                src="/images/primer.png"
-                alt="Ilustración de Jorge como socio tecnológico"
-                fill
-                className="object-contain p-6"
-                priority
-              />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-center">
+            {/* Texto Hero */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-xs font-bold uppercase tracking-wider">
+                <Briefcase className="w-3 h-3" />
+                Partnership Program
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-balance leading-[1.1]">
+                Co-fundo negocios como <br />
+                <span className="text-[var(--primary)] relative inline-block">
+                  Socio Tecnológico
+                  <svg
+                    className="absolute w-full h-2 bottom-1 left-0 text-[var(--primary)] opacity-20"
+                    viewBox="0 0 100 10"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0 5 Q 50 10 100 5"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                  </svg>
+                </span>
+              </h1>
+
+              <p className="text-lg md:text-xl text-[var(--muted)] max-w-xl text-balance leading-relaxed">
+                Si tienes una visión de negocio y disposición para ejecutar, yo
+                pongo la arquitectura digital, el producto y la estrategia
+                técnica.
+                <strong className="text-[var(--foreground)] font-medium">
+                  {" "}
+                  Skin in the game real.
+                </strong>
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link
+                  href="/contact"
+                  className="btn-primary h-12 px-8 text-base"
+                >
+                  Aplicar como socio
+                </Link>
+                <Link
+                  href="#como-funciona"
+                  className="btn-ghost h-12 px-6 text-base bg-[var(--surface)] border-[var(--border)]"
+                >
+                  Ver proceso
+                </Link>
+              </div>
+            </div>
+
+            {/* Ilustración Hero (Card Flotante) */}
+            <div className="relative mx-auto w-full max-w-sm lg:max-w-md">
+              <div className="absolute -inset-4 bg-gradient-to-tr from-[var(--primary)]/20 to-transparent rounded-[2.5rem] blur-2xl -z-10" />
+              <div className="relative aspect-[4/5] rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] shadow-2xl overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-soft-light"></div>
+                <Image
+                  src="/images/primer.png"
+                  alt="Ilustración Jorge Socio"
+                  fill
+                  className="object-contain p-8 hover:scale-105 transition-transform duration-700"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* TIPOS DE PROYECTOS */}
-      <section className="py-10 md:py-14 border-t" id="tipos">
+      {/* ================= TIPOS DE PROYECTOS (Bento Grid) ================= */}
+      <section
+        className="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        id="tipos"
+      >
         <MotionFade>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">
-                ¿Qué tipo de proyectos estoy buscando?
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-bold mb-4 tracking-tight">
+                ¿Qué busco exactamente?
               </h2>
-              <p className="mt-2 text-sm md:text-base opacity-80 max-w-2xl">
-                No busco “ideas millonarias” sin base, sino proyectos donde
-                puedas aportar algo real y la parte tecnológica marque
-                diferencia: desde negocios locales con ambición hasta productos
-                digitales que necesiten un socio técnico estable.
+              <p className="text-[var(--muted)] text-lg text-balance">
+                No busco "ideas millonarias" abstractas. Busco tracción, nichos
+                claros y socios operativos.
               </p>
             </div>
-            {/* Mini-ilustración / icono metafórico */}
-            <div className="mx-auto w-32 md:w-40">
-              <div className="relative aspect-[4/3] rounded-2xl border overflow-hidden">
-                <Image
-                  src="/images/segunda.png"
-                  alt="Ilustración de tipos de proyectos"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+            {/* Mini ilustración decorativa */}
+            <div className="hidden md:block relative w-24 h-24 opacity-80">
+              <Image
+                src="/images/segunda.png"
+                alt="Icono"
+                fill
+                className="object-contain"
+              />
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid md:grid-cols-3 gap-6">
             {projectTypes.map((type) => (
               <div
                 key={type.label}
-                className="rounded-2xl border p-6 flex flex-col justify-between"
+                className="group relative rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 hover:border-[var(--primary)]/50 transition-colors shadow-sm"
               >
-                <h3 className="text-lg font-semibold mb-3">{type.label}</h3>
-                <ul className="space-y-2 text-sm opacity-90">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] mb-6 group-hover:scale-110 transition-transform">
+                  <type.icon className="w-6 h-6" />
+                </div>
+
+                <h3 className="text-xl font-bold mb-2">{type.label}</h3>
+                <p className="text-sm text-[var(--muted)] mb-6">{type.desc}</p>
+
+                <ul className="space-y-3">
                   {type.bullets.map((b) => (
-                    <li key={b}>{b}</li>
+                    <li
+                      key={b}
+                      className="flex items-start gap-2 text-sm opacity-80"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1.5 shrink-0" />
+                      {b}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -182,193 +232,178 @@ export default function SociosPage() {
         </MotionFade>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="py-10 md:py-14 border-t" id="como-funciona">
-        <MotionFade>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">
-                Cómo trabajaremos si encajamos
+      {/* ================= CÓMO FUNCIONA ================= */}
+      <section
+        className="py-16 md:py-24 bg-[var(--surface)] border-y border-[var(--border)]"
+        id="como-funciona"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <MotionFade>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-3xl font-bold mb-4">
+                El proceso, sin rodeos
               </h2>
-              <p className="mt-2 text-sm md:text-base opacity-80 max-w-2xl">
-                Quiero que el proceso sea transparente desde el principio. Nada
-                de promesas vagas: hablamos claro de responsabilidades, tiempos,
-                riesgos y posibles escenarios antes de escribir una sola línea
-                de código.
+              <p className="text-[var(--muted)] text-lg text-balance">
+                Transparencia radical desde el día 1. Hablamos de riesgos y
+                beneficios antes de escribir código.
               </p>
             </div>
-          </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {steps.map((step, idx) => (
-              <div key={step.title} className="rounded-2xl border p-6">
-                <span className="text-xs font-medium uppercase tracking-[0.2em] opacity-60">
-                  Paso {idx + 1}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+              {/* Línea conectora (Desktop) */}
+              <div className="hidden lg:block absolute top-12 left-0 w-full h-px bg-[var(--border)] -z-10" />
+
+              {steps.map((step, idx) => (
+                <div key={step.title} className="relative pt-8">
+                  <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-[var(--on-primary)] flex items-center justify-center font-bold text-sm mb-6 border-4 border-[var(--surface)] relative z-10">
+                    {idx + 1}
+                  </div>
+                  <h3 className="text-lg font-bold mb-3">{step.title}</h3>
+                  <p className="text-sm text-[var(--muted)] leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </MotionFade>
+        </div>
+      </section>
+
+      {/* ================= COMPARATIVA DE APORTE ================= */}
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <MotionFade>
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
+            {/* Tarjeta: Lo que yo aporto */}
+            <div className="rounded-[2.5rem] bg-[var(--surface)] border border-[var(--border)] p-8 md:p-10 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--primary)]/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                <span className="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+                  👨‍💻
                 </span>
-                <h3 className="mt-2 text-lg font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm md:text-base opacity-85">
-                  {step.description}
-                </p>
+                Mi responsabilidad
+              </h3>
+
+              <ul className="space-y-4">
+                {[
+                  "Desarrollo End-to-End (Web, App, Panel)",
+                  "Automatización y pagos (Stripe, MP)",
+                  "Arquitectura escalable y seguridad",
+                  "Estrategia de Producto & UX",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-[var(--muted)]"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-[var(--primary)] shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Tarjeta: Lo que tú aportas */}
+            <div className="rounded-[2.5rem] bg-[var(--background)] border border-[var(--border)] p-8 md:p-10 relative overflow-hidden">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                <span className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                  🤝
+                </span>
+                Tu responsabilidad
+              </h3>
+
+              <ul className="space-y-4">
+                {[
+                  "Conocimiento del sector / nicho",
+                  "Operación del negocio y ventas",
+                  "Capital inicial (si aplica)",
+                  "Compromiso de ejecución real",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-[var(--muted)]"
+                  >
+                    <Target className="w-5 h-5 text-[var(--foreground)] shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </MotionFade>
+      </section>
+
+      {/* ================= MODELOS & FAQ ================= */}
+      <section className="py-16 md:py-24 bg-[var(--surface)] border-t border-[var(--border)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <MotionFade>
+            <div className="grid lg:grid-cols-[1fr_0.8fr] gap-12 items-start">
+              {/* Columna FAQ */}
+              <div>
+                <h2 className="text-3xl font-bold mb-8">
+                  Preguntas Frecuentes
+                </h2>
+                <div className="space-y-4">
+                  {faq.map((item) => (
+                    <details
+                      key={item.q}
+                      className="group rounded-2xl border border-[var(--border)] bg-[var(--background)] open:bg-[var(--surface)] transition-all duration-300"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-medium">
+                        <span className="flex items-center gap-3">
+                          <HelpCircle className="w-5 h-5 text-[var(--muted)] group-open:text-[var(--primary)]" />
+                          {item.q}
+                        </span>
+                        <ArrowRight className="w-4 h-4 text-[var(--muted)] transition-transform group-open:rotate-90" />
+                      </summary>
+                      <div className="px-5 pb-5 text-[var(--muted)] text-sm leading-relaxed border-t border-transparent group-open:border-[var(--border)] group-open:pt-4">
+                        {item.a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </MotionFade>
-      </section>
 
-      {/* APORTE DE CADA PARTE */}
-      <section className="py-10 md:py-14 border-t">
-        <MotionFade>
-          <div className="grid gap-8 md:grid-cols-2 items-start">
-            <div className="rounded-2xl border p-6 md:p-7">
-              <h3 className="text-lg md:text-xl font-semibold">
-                ¿Qué pongo yo sobre la mesa?
-              </h3>
-              <ul className="mt-4 space-y-2 text-sm md:text-base opacity-90">
-                <li>
-                  🔹 Diseño y desarrollo completo de la parte digital: landing,
-                  panel interno, sistemas de reservas o ventas, dashboards.
-                </li>
-                <li>
-                  🔹 Integración de pagos, analítica, CRM ligero y
-                  automatizaciones para que el negocio no dependa de planillas
-                  infinitas.
-                </li>
-                <li>
-                  🔹 Visión de producto: priorizar features, construir MVPs
-                  realistas y evitar quemar tiempo en cosas que no mueven la
-                  aguja.
-                </li>
-                <li>
-                  🔹 Acompañamiento a largo plazo mientras el proyecto tenga
-                  sentido para ambas partes.
-                </li>
-              </ul>
-            </div>
+              {/* Columna Modelos (Ilustración) */}
+              <div className="sticky top-24">
+                <div className="rounded-3xl border border-[var(--border)] bg-[var(--background)] p-8 text-center">
+                  <h3 className="text-xl font-bold mb-2">Modelos flexibles</h3>
+                  <p className="text-sm text-[var(--muted)] mb-8">
+                    Equity puro, Revenue Share o Híbridos.
+                  </p>
 
-            <div className="rounded-2xl border p-6 md:p-7">
-              <h3 className="text-lg md:text-xl font-semibold">
-                ¿Qué espero de la otra parte?
-              </h3>
-              <ul className="mt-4 space-y-2 text-sm md:text-base opacity-90">
-                <li>
-                  🔹 Compromiso real: tiempo para ejecutar, no solo entusiasmo
-                  de fin de semana.
-                </li>
-                <li>
-                  🔹 Aporte concreto: puede ser experiencia en el sector,
-                  comunidad, capital, acceso a clientes, contactos o un negocio
-                  ya en marcha.
-                </li>
-                <li>
-                  🔹 Comunicación transparente: hablar de números, miedos y
-                  expectativas desde el inicio.
-                </li>
-                <li>
-                  🔹 Mentalidad de equipo: esto no va de “el programador que
-                  hace magia”, sino de construir algo en conjunto.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </MotionFade>
-      </section>
-
-      {/* MODELOS DE COLABORACIÓN */}
-      <section className="py-10 md:py-14 border-t">
-        <MotionFade>
-          <div className="grid gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold">
-                Modelos de colaboración posibles
-              </h2>
-              <p className="mt-2 text-sm md:text-base opacity-80 max-w-2xl">
-                Cada proyecto es distinto, pero en general la lógica es simple:
-                si la tecnología sostiene gran parte del valor del negocio, mi
-                participación también debe reflejarlo. Podemos combinar
-                porcentaje, honorarios moderados y objetivos por hitos.
-              </p>
-              <ul className="mt-4 space-y-2 text-sm md:text-base opacity-90">
-                <li>
-                  🔹 <strong>Participación en utilidades</strong> a cambio del
-                  desarrollo y evolución del producto digital.
-                </li>
-                <li>
-                  🔹 <strong>Parte fija pequeña</strong> para cubrir costos
-                  mínimos + porcentaje que crece si el negocio funciona.
-                </li>
-                <li>
-                  🔹 <strong>Acuerdos por fases</strong>: MVP, tracción inicial,
-                  expansión. En cada fase revisamos números y ajustes.
-                </li>
-                <li>
-                  🔹 Documentamos todo por escrito para evitar malentendidos a
-                  largo plazo.
-                </li>
-              </ul>
-            </div>
-
-            {/* Ilustración de “acuerdo / partnership” */}
-            <div className="relative w-40 sm:w-52 md:w-full max-w-sm mx-auto">
-              <div className="relative aspect-[4/3] rounded-3xl border overflow-hidden">
-                <Image
-                  src="/images/tercera.png"
-                  alt="Ilustración de colaboración y acuerdos"
-                  fill
-                  className="object-contain"
-                />
+                  <div className="relative aspect-square w-full max-w-xs mx-auto">
+                    <Image
+                      src="/images/tercera.png"
+                      alt="Ilustración Partnership"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </MotionFade>
+          </MotionFade>
+        </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-10 md:py-14 border-t">
+      {/* ================= CTA FINAL ================= */}
+      <section className="py-16 md:py-24 max-w-4xl mx-auto px-4 text-center">
         <MotionFade>
-          <h2 className="text-2xl md:text-3xl font-bold mb-6">
-            Preguntas frecuentes
-          </h2>
-          <div className="space-y-4">
-            {faq.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-2xl border p-4 md:p-5"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                  <span className="font-medium text-sm md:text-base">
-                    {item.q}
-                  </span>
-                  <span className="text-xs opacity-60 group-open:rotate-180 transition-transform">
-                    ▼
-                  </span>
-                </summary>
-                <p className="mt-2 text-sm md:text-base opacity-85">{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </MotionFade>
-      </section>
+          <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-6">
+            ¿Construimos algo juntos?
+          </h3>
+          <p className="text-lg text-[var(--muted)] mb-10 max-w-xl mx-auto text-balance">
+            Si has llegado hasta aquí y tienes una idea que te quita el sueño,
+            veamos si soy la pieza que le falta a tu puzzle.
+          </p>
 
-      {/* CTA FINAL */}
-      <section className="py-10 md:py-16 border-t">
-        <MotionFade>
-          <div className="rounded-2xl p-8 md:p-10 border text-center max-w-3xl mx-auto">
-            <h3 className="text-xl md:text-2xl font-semibold">
-              ¿Te suena construir algo juntos?
-            </h3>
-            <p className="mt-2 text-sm md:text-base opacity-85">
-              Si tienes una idea con potencial y estás dispuesto a poner
-              trabajo, podemos explorar si tiene sentido aliarnos. Prefiero
-              pocos proyectos, pero bien hechos.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <Link href="/contact" className="btn-primary">
-                Enviar mi propuesta
-              </Link>
-              <Link href="/" className="btn-ghost">
-                Volver al inicio
-              </Link>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/contact"
+              className="btn-primary w-full sm:w-auto h-14 px-10 text-lg shadow-xl shadow-[var(--primary)]/20 hover:scale-105 transition-transform"
+            >
+              Enviar propuesta ahora
+            </Link>
           </div>
         </MotionFade>
       </section>

@@ -1,22 +1,15 @@
 "use client";
 
 /**
- * PortfolioPage
+ * PortfolioPage - Premium Case Study View
  * ------------------------------------------------------------
- * - Carrusel accesible con controles y puntos.
- * - Modal con resumen del proyecto (Imnoba).
- * - Framer Motion tipado: Transition / TargetAndTransition.
- * - Compatible con tsconfig `jsx: "react-jsx"`.
+ * - Diseño tipo "Bento" para los stats del proyecto.
+ * - Carrusel con UX mejorada (glassmorphism controls).
+ * - Modal inmersivo con galería de miniaturas.
  */
 
-import type React from "react"; // ✅ para usar React.JSX.Element en el return type
-import {
-  useMemo,
-  useState,
-  useCallback,
-  type KeyboardEvent,
-  type MouseEvent,
-} from "react";
+import type React from "react";
+import { useMemo, useState, useCallback, type KeyboardEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -26,52 +19,63 @@ import {
   type Variants,
   type TargetAndTransition,
 } from "framer-motion";
-import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
+  Zap,
+  LayoutTemplate,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
 
-/* ==================== Animations (tipadas) ==================== */
+/* ==================== Animations (Strictly Typed) ==================== */
 
-/** Muelles rápidos y naturales (evita warnings de tipos) */
 const spring: Transition = {
   type: "spring",
-  stiffness: 500,
-  damping: 40,
-  mass: 0.9,
+  stiffness: 400,
+  damping: 30,
 };
 
-/** Fade-up simple parametrizable */
 const fade = (d = 0): Variants => ({
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.35, delay: d } },
+  initial: { opacity: 0, y: 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, delay: d, ease: "easeOut" },
+  },
 });
 
-/** Slide con `custom` para dirección (prev/next). Tipamos retornos. */
 const slide = {
   initial: (dir: number): TargetAndTransition => ({
-    x: dir > 0 ? 40 : -40,
+    x: dir > 0 ? "100%" : "-100%",
     opacity: 0,
   }),
-  animate: { x: 0, opacity: 1, transition: { duration: 0.35 } },
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
+  },
   exit: (dir: number): TargetAndTransition => ({
-    x: dir > 0 ? -40 : 40,
+    x: dir > 0 ? "-20%" : "20%",
     opacity: 0,
-    transition: { duration: 0.25 },
+    transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] },
   }),
 } as const;
 
 /* ==================== Page ==================== */
 
 export default function PortfolioPage(): React.JSX.Element {
-  // Galería (rutas en /public/images)
+  // Galería
   const gallery = useMemo(
     () => [
-      { src: "/images/imnoba.png", alt: "Imnoba — home" },
-      { src: "/images/imnobaAgent.png", alt: "Imnoba — panel de agente" },
-      {
-        src: "/images/ImnobaDetail.png",
-        alt: "Imnoba — detalle de publicación",
-      },
-      { src: "/images/ImnobaAdmin.png", alt: "Imnoba — panel administrativo" },
-      { src: "/images/imnobaLogin.png", alt: "Imnoba — pantalla de acceso" },
+      { src: "/images/imnoba.png", alt: "Imnoba — Home Principal" },
+      { src: "/images/imnobaAgent.png", alt: "Imnoba — Panel de Agente" },
+      { src: "/images/ImnobaDetail.png", alt: "Imnoba — Detalle de Propiedad" },
+      { src: "/images/ImnobaAdmin.png", alt: "Imnoba — Backoffice Admin" },
+      { src: "/images/imnobaLogin.png", alt: "Imnoba — Sistema de Acceso" },
     ],
     []
   );
@@ -90,6 +94,7 @@ export default function PortfolioPage(): React.JSX.Element {
 
   const openModal = () => setOpen(true);
   const closeModal = () => setOpen(false);
+
   const onCardKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -98,238 +103,250 @@ export default function PortfolioPage(): React.JSX.Element {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-10 md:py-14">
-      <motion.h1
-        {...fade(0)}
-        className="text-3xl md:text-4xl font-bold tracking-tight mb-6"
-      >
-        Portafolio
-      </motion.h1>
+    <section className="min-h-screen py-12 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <motion.div {...fade(0)} className="mb-12 max-w-2xl">
+        <span className="badge mb-4">Case Study Destacado</span>
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+          Portafolio Selecto
+        </h1>
+        <p className="text-lg text-[var(--muted)]">
+          Una mirada profunda a proyectos reales, complejos y en producción.
+        </p>
+      </motion.div>
 
-      {/* === Único proyecto: Imnoba === */}
+      {/* === FEATURED PROJECT: IMNOBA === */}
       <motion.article
-        {...fade(0.05)}
-        className="group grid lg:grid-cols-2 gap-6 items-stretch"
+        {...fade(0.1)}
+        className="group relative bg-[var(--surface)] border border-[var(--border)] rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
       >
-        {/* Card interactiva (DIV accesible, no <button> para evitar anidar botones) */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={openModal}
-          onKeyDown={onCardKey}
-          className="text-left card p-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] cursor-pointer"
-          aria-label="Abrir resumen del proyecto Imnoba"
-        >
-          <div className="relative aspect-video bg-[var(--surface)]">
-            <AnimatePresence mode="sync">
+        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0">
+          {/* COLUMNA IZQUIERDA: VISUAL / CARRUSEL */}
+          <div
+            className="relative aspect-[4/3] lg:aspect-auto lg:h-full overflow-hidden bg-[var(--background)] cursor-zoom-in"
+            onClick={openModal}
+            role="button"
+            tabIndex={0}
+            onKeyDown={onCardKey}
+          >
+            {/* Overlay Gradient on Hover */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 z-10 transition-colors duration-300 pointer-events-none" />
+
+            {/* Fullscreen Icon Hint */}
+            <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 p-2 rounded-full shadow-lg">
+              <Maximize2 className="w-5 h-5 text-black" />
+            </div>
+
+            <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.div
-                key={gallery[idx]?.src ?? String(idx)}
+                key={idx}
                 custom={dir}
                 variants={slide}
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="absolute inset-0"
+                className="absolute inset-0 w-full h-full"
               >
                 <Image
-                  src={gallery[idx]?.src ?? "/images/imnobaAgent.png"}
-                  alt={gallery[idx]?.alt ?? "Imnoba — pantalla"}
+                  src={gallery[idx]?.src ?? "/images/imnoba.png"}
+                  alt={gallery[idx]?.alt ?? "Project Screenshot"}
                   fill
-                  quality={100}
-                  sizes="(min-width:1024px) 720px, 100vw"
-                  className="object-contain"
-                  priority={idx <= 1}
+                  className="object-cover object-top"
+                  sizes="(min-width: 1024px) 60vw, 100vw"
+                  priority
                 />
               </motion.div>
             </AnimatePresence>
 
-            {/* Dots + controles */}
-            <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between">
-              <div className="flex gap-2">
+            {/* Controls (Bottom Floating) */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 px-4 py-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-lg">
+              <CarouselBtn
+                onClick={(e) => {
+                  e.stopPropagation();
+                  go(idx - 1);
+                }}
+                label="Prev"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </CarouselBtn>
+
+              <div className="flex gap-1.5">
                 {gallery.map((_, i) => (
-                  <span
-                    key={`dot-${i}`}
-                    className={`h-1.5 rounded-full transition-all ${
-                      i === idx
-                        ? "w-6 bg-[var(--primary)]"
-                        : "w-3 bg-[var(--border)]"
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === idx ? "w-6 bg-white" : "w-1.5 bg-white/40"
                     }`}
                   />
                 ))}
               </div>
-            </div>
 
-            <div className="absolute inset-y-0 left-0 flex items-center">
               <CarouselBtn
-                ariaLabel="Anterior"
                 onClick={(e) => {
                   e.stopPropagation();
-                  go((idx - 1 + gallery.length) % gallery.length);
+                  go(idx + 1);
                 }}
+                label="Next"
               >
-                <ChevronLeft className="h-5 w-5" />
-              </CarouselBtn>
-            </div>
-            <div className="absolute inset-y-0 right-0 flex items-center">
-              <CarouselBtn
-                ariaLabel="Siguiente"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  go((idx + 1) % gallery.length);
-                }}
-              >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="w-5 h-5 text-white" />
               </CarouselBtn>
             </div>
           </div>
 
-          <div className="p-5 md:p-6">
-            <div className="flex items-start justify-between gap-3">
+          {/* COLUMNA DERECHA: INFO & STATS */}
+          <div className="p-8 md:p-10 lg:p-12 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-[var(--border)]">
+            <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-xl md:text-2xl font-semibold tracking-tight">
+                <h2 className="text-3xl font-bold tracking-tight mb-2">
                   Imnoba
                 </h2>
-                <p className="mt-1 text-sm opacity-80">
-                  Marketplace inmobiliario y de vehículos.
+                <p className="text-[var(--muted)] font-medium">
+                  Marketplace Inmobiliario & Automotor
                 </p>
               </div>
               <Link
                 href="https://www.imnoba.com"
                 target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e: MouseEvent<HTMLAnchorElement>) =>
-                  e.stopPropagation()
-                }
-                className="btn-ghost text-sm"
-                aria-label="Abrir imnoba.com"
+                className="p-3 rounded-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] hover:scale-110 transition-transform"
+                aria-label="Visitar Imnoba"
+                onClick={(e) => e.stopPropagation()}
               >
-                Visitar
-                <ArrowUpRight className="h-4 w-4" />
+                <ArrowUpRight className="w-5 h-5" />
               </Link>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="prose prose-sm text-[var(--muted)] mb-8 leading-relaxed">
+              <p>
+                Una plataforma robusta construida para escalar. Gestiona miles
+                de propiedades y vehículos con filtros instantáneos,
+                autenticación segura y roles diferenciados (Administrador,
+                Inmobiliaria, Usuario).
+              </p>
+            </div>
+
+            {/* Grid de Features (Bento Style Mini) */}
+            <div className="grid grid-cols-2 gap-3 mb-8">
               {[
-                "Next.js",
-                "Supabase",
-                "Tailwind",
-                "Framer Motion",
-                "Vercel",
-                "React Native",
-              ].map((t) => (
-                <span key={t} className="badge">
-                  {t}
-                </span>
+                { icon: Zap, label: "Performance", val: "99/100 CWV" },
+                { icon: ShieldCheck, label: "Seguridad", val: "RLS + Auth" },
+                { icon: LayoutTemplate, label: "UI Kit", val: "Custom System" },
+                { icon: Smartphone, label: "Mobile", val: "Responsive" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] flex flex-col gap-1"
+                >
+                  <stat.icon className="w-4 h-4 text-[var(--primary)] mb-1" />
+                  <span className="text-[10px] uppercase font-bold text-[var(--muted)] tracking-wider">
+                    {stat.label}
+                  </span>
+                  <span className="text-sm font-semibold">{stat.val}</span>
+                </div>
               ))}
             </div>
 
-            <p className="mt-3 text-sm opacity-80">
-              Click en la card para ver el resumen.
-            </p>
-          </div>
-        </div>
-
-        {/* Lateral con highlights */}
-        <div className="card p-6 md:p-7 flex flex-col justify-center">
-          <h3 className="text-lg font-semibold tracking-tight">Highlights</h3>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li>🔹 Filtros facetados en ms y estados de carga sólidos.</li>
-            <li>🔹 Paneles multi-rol (admin, agentes, usuarios).</li>
-            <li>🔹 Dark/Light theme, accesibilidad y micro-interacciones.</li>
-            <li>🔹 App móvil (en desarrollo) para operación en campo.</li>
-          </ul>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-            {[
-              { k: "CWV", v: "Lighthouse 95+" },
-              { k: "Listados", v: "Rendimiento alto" },
-              { k: "Arquitectura", v: "Escalable" },
-            ].map((s) => (
-              <div
-                key={s.k}
-                className="rounded-xl border border-[var(--border)] p-3"
-              >
-                <div className="text-xs opacity-70">{s.k}</div>
-                <div className="font-semibold">{s.v}</div>
+            {/* Stack Tags */}
+            <div>
+              <span className="text-xs font-bold uppercase text-[var(--muted)] tracking-wider mb-3 block">
+                Tech Stack
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Next.js 14",
+                  "Supabase",
+                  "TypeScript",
+                  "Tailwind",
+                  "Framer Motion",
+                ].map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-3 py-1 rounded-md bg-[var(--background)] border border-[var(--border)] text-xs font-medium"
+                  >
+                    {tech}
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <button
+              onClick={openModal}
+              className="mt-10 w-full py-4 rounded-xl border border-[var(--border)] text-sm font-bold hover:bg-[var(--background)] transition-colors flex items-center justify-center gap-2 group-hover:border-[var(--primary)]/50"
+            >
+              <Maximize2 className="w-4 h-4" />
+              Ver detalles y galería completa
+            </button>
           </div>
         </div>
       </motion.article>
 
-      {/* ===== Modal de resumen ===== */}
+      {/* === MODAL (Full Screen Overlay) === */}
       <AnimatePresence>
         {open && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Backdrop Blur */}
+            <div
+              className="absolute inset-0 bg-[var(--background)]/90 backdrop-blur-xl"
+              onClick={closeModal}
             />
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-label="Resumen del proyecto Imnoba"
-              className="fixed inset-0 z-50 grid place-items-center p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="w-full max-w-3xl card overflow-hidden"
-                initial={{ y: 20, scale: 0.98 }}
-                animate={{ y: 0, scale: 1 }}
-                exit={{ y: 10, scale: 0.98 }}
-                transition={spring}
-              >
-                <div className="p-4 md:p-6 border-b">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-xl md:text-2xl font-semibold tracking-tight">
-                      Imnoba — Resumen del proyecto
-                    </h3>
-                    <button
-                      className="btn-ghost px-3 py-2 rounded-xl"
-                      onClick={closeModal}
-                      aria-label="Cerrar resumen"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
 
-                <div className="p-4 md:p-6 grid gap-5 md:grid-cols-5">
-                  {/* Imagen grande */}
-                  <div className="md:col-span-2">
-                    <div className="relative aspect-[4/3] rounded-xl overflow-hidden ring-1 ring-[var(--border)] bg-[var(--surface)]">
+            <motion.div
+              className="relative w-full max-w-6xl max-h-[90vh] bg-[var(--surface)] rounded-3xl border border-[var(--border)] shadow-2xl overflow-hidden flex flex-col"
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={spring}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify_between px-6 py-4 border-b border-[var(--border)] bg-[var(--surface)] z-10">
+                <div>
+                  <h3 className="text-lg font-bold">Galería del Proyecto</h3>
+                  <p className="text-xs text-[var(--muted)]">Esc para cerrar</p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="p-2 rounded-full hover:bg-[var(--background)] transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8">
+                <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
+                  {/* Main Image in Modal */}
+                  <div className="space-y-4">
+                    <div className="relative aspect-video rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-sm">
                       <Image
-                        src={gallery[idx]?.src ?? "/images/imnoba.png"}
-                        alt={gallery[idx]?.alt ?? "Imnoba — pantalla"}
+                        src={gallery[idx]?.src}
+                        alt={gallery[idx]?.alt}
                         fill
-                        quality={100}
-                        sizes="(min-width:768px) 480px, 100vw"
                         className="object-contain"
+                        sizes="80vw"
                         priority
                       />
                     </div>
-                    {/* Thumbs */}
-                    <div className="mt-3 grid grid-cols-5 gap-2">
-                      {gallery.map((g, i) => (
+                    {/* Thumbnails */}
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {gallery.map((img, i) => (
                         <button
-                          key={g.src}
+                          key={i}
                           onClick={() => setIdx(i)}
-                          className={`relative aspect-square rounded-lg overflow-hidden ring-1 transition ${
+                          className={`relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all ${
                             i === idx
-                              ? "ring-[var(--primary)]"
-                              : "ring-[var(--border)]"
+                              ? "border-[var(--primary)] opacity-100"
+                              : "border-transparent opacity-60 hover:opacity-100"
                           }`}
-                          aria-label={`Cambiar a captura ${i + 1}`}
                         >
                           <Image
-                            src={g.src}
-                            alt={g.alt}
+                            src={img.src}
+                            alt={img.alt}
                             fill
-                            quality={90}
-                            sizes="100px"
                             className="object-cover"
                           />
                         </button>
@@ -337,97 +354,78 @@ export default function PortfolioPage(): React.JSX.Element {
                     </div>
                   </div>
 
-                  {/* Texto */}
-                  <div className="md:col-span-3">
-                    <div className="prose dark:prose-invert max-w-none">
-                      <p>
-                        <strong>Imnoba</strong> es un marketplace para
-                        propiedades y vehículos con
-                        <em> filtros avanzados</em>, <em>paneles multi-rol</em>,
-                        autenticación y experiencia refinada de rendimiento (CWV
-                        altos). Arquitectura modular (App Router) y Supabase.
+                  {/* Project Narrative */}
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-2xl font-bold mb-2">Imnoba</h4>
+                      <p className="text-[var(--muted)] leading-relaxed text-sm">
+                        Una plataforma diseñada para simplificar la búsqueda y
+                        publicación de activos de alto valor. El desafío
+                        principal fue mantener una velocidad de carga
+                        prácticamente instantánea, por debajo de los 100&nbsp;ms
+                        en transiciones, mientras se manejan grandes volúmenes
+                        de imágenes y filtros complejos en tiempo real.
                       </p>
-                      <ul>
-                        <li>
-                          Listados con filtros facetados y estados de
-                          carga/errores claros.
-                        </li>
-                        <li>
-                          Panel admin para moderación, métricas y flujos de
+                    </div>
+
+                    <div>
+                      <h5 className="font-bold text-sm mb-3 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[var(--primary)]" />
+                        Desafíos Superados
+                      </h5>
+                      <ul className="space-y-2 text-sm text-[var(--muted)]">
+                        <li className="flex gap-2">
+                          <span className="text-[var(--primary)]">•</span>
+                          Sincronización en tiempo real de estados de
                           publicación.
                         </li>
-                        <li>
-                          UI consistente con dark/light, accesibilidad y
-                          micro-interacciones.
+                        <li className="flex gap-2">
+                          <span className="text-[var(--primary)]">•</span>
+                          Optimización de imágenes on-the-fly con Next/Image.
                         </li>
-                        <li>
-                          App móvil (React Native) en desarrollo para operación
-                          en campo.
+                        <li className="flex gap-2">
+                          <span className="text-[var(--primary)]">•</span>
+                          Sistema de roles con Row Level Security (RLS).
                         </li>
                       </ul>
-                      <p>
-                        <strong>Stack:</strong> Next.js, TypeScript, Tailwind,
-                        Framer Motion, Supabase, Vercel y React Native.
-                      </p>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {[
-                        "Next.js",
-                        "TypeScript",
-                        "Tailwind",
-                        "Framer Motion",
-                        "Supabase",
-                        "Vercel",
-                        "React Native",
-                      ].map((t) => (
-                        <span key={t} className="badge">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
+                    <div className="pt-4 border-t border-[var(--border)]">
                       <Link
                         href="https://www.imnoba.com"
                         target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary"
+                        className="btn-primary w-full justify-center"
                       >
-                        Visitar Imnoba
-                        <ArrowUpRight className="h-4 w-4" />
+                        Visitar Sitio en Vivo
                       </Link>
-                      <button className="btn-ghost" onClick={closeModal}>
-                        Cerrar
-                      </button>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>
   );
 }
 
-/* ==================== UI bits ==================== */
+/* ==================== Helper ==================== */
+
 function CarouselBtn({
-  children,
   onClick,
-  ariaLabel,
+  children,
+  label,
 }: {
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-  ariaLabel: string;
+  label: string;
 }) {
   return (
     <button
-      type="button"
-      aria-label={ariaLabel}
       onClick={onClick}
-      className="m-2 btn-ghost p-2 rounded-full ring-1 ring-[var(--border)] bg-[var(--surface)]/90 backdrop-blur hover:translate-x-0.5 transition"
+      aria-label={label}
+      className="p-2 rounded-full hover:bg-white/20 transition-colors active:scale-95"
     >
       {children}
     </button>
